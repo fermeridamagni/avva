@@ -23,10 +23,11 @@ coverage
 
 # Build Outputs
 .next/
+.astro/
 out/
 build
 dist
-
+.generated/
 
 # Debug
 npm-debug.log*
