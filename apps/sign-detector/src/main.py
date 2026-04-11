@@ -3,9 +3,9 @@ import time
 import cv2
 import mediapipe as mp
 from dotenv import load_dotenv
-from lib import helpers
-from lib import utils
-from lib import handlers
+import lib.utils as utils
+import lib.helpers as helpers
+import lib.handlers as handlers
 
 load_dotenv() # Load environment variables from .env.local
 
@@ -17,19 +17,8 @@ load_dotenv() # Load environment variables from .env.local
 # If an iPhone is acting as a Continuity Camera, try index 1.
 CAMERA_INDEX = int(os.getenv("CAMERA_INDEX", "0"))
 
-# Path to the HandLandmarker model (same folder as this script).
-MODEL_PATH = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    "hand_landmarker.task",
-)
 
-# Download the model if it's missing.
-if not os.path.exists(MODEL_PATH):
-    import urllib.request
-    print(f"Downloading HandLandmarker model to {MODEL_PATH}...")
-    model_url = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task"
-    urllib.request.urlretrieve(model_url, MODEL_PATH)
-    print("Download complete.")
+MODEL_PATH = utils.getModel()
 
 # ---------------------------------------------------------------------------
 # MediaPipe Tasks API setup
@@ -48,11 +37,10 @@ options = HandLandmarkerOptions(
     min_tracking_confidence=0.5,
 )
 
+
 # ---------------------------------------------------------------------------
 # Main loop
 # ---------------------------------------------------------------------------
-
-
 def main():
     """Entry point: open camera, detect hand, display landmarks and coords."""
     cap = cv2.VideoCapture(CAMERA_INDEX)

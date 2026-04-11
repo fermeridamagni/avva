@@ -1,5 +1,7 @@
 import math
+import os
 import cv2
+
 
 # Colors (BGR format for OpenCV).
 COLOR_BONE = (0, 255, 0)        # Green lines between joints.
@@ -134,3 +136,27 @@ def print_coordinates_table(landmarks):
     for idx, lm in enumerate(landmarks):
         print(f"{idx:3d}  {LANDMARK_NAMES[idx]:<22s}  {lm.x:8.4f}  {lm.y:8.4f}  {lm.z:8.4f}")
     print(separator)
+
+
+# ---------------------------------------------------------------------------
+# Model loading helper
+# ---------------------------------------------------------------------------
+def getModel():
+    # Path to the HandLandmarker model (same folder as this script).
+    MODEL_PATH = os.path.join(
+        os.path.dirname(os.getcwd()),
+        "sign-detector",
+        "hand_landmarker.task",
+    )
+
+    # Download the model if it's missing.
+    if not os.path.exists(MODEL_PATH):
+        import urllib.request
+
+        print(f"Downloading HandLandmarker model to {MODEL_PATH}...")
+        model_url = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task"
+        
+        urllib.request.urlretrieve(model_url, MODEL_PATH)
+        print("Download complete.")
+
+    return MODEL_PATH
