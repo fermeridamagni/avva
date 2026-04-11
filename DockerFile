@@ -1,0 +1,68 @@
+# syntax=docker/dockerfile:1.7
+
+# Use Node.js 24 LTS on Debian Bookworm slim.
+# TARGETPLATFORM keeps this build compatible with linux/arm64 (Raspberry Pi 5).
+FROM --platform=$TARGETPLATFORM node:24-bookworm-slim
+
+# Avoid interactive prompts during apt operations.
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Toolchain versions.
+ARG BUN_VERSION=1.3.12
+ARG PYTHON_VERSION=3.12
+ARG RUST_TOOLCHAIN=stable
+
+# Configure install locations and PATH for Bun, Rust and uv-managed Python.
+ENV TZ=UTC \
+    BUN_INSTALL=/opt/bun \
+    CARGO_HOME=/opt/cargo \
+    RUSTUP_HOME=/opt/rustup \
+    UV_LINK_MODE=copy \
+    UV_PYTHON_INSTALL_DIR=/opt/python \
+    PATH=/opt/bun/bin:/opt/cargo/bin:/root/.local/bin:/opt/python/bin:$PATH
+
+# Use bash with pipefail so piped install commands fail loudly.
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# Update base packages to reduce known CVEs and install required system dependencies.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    git \
+    xz-utils \
+    unzip \
+    build-essential \
+    pkg-config \
+    libssl-dev \
+    && apt-get upgrade -y --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Bun.
+RUN curl -fsSL https://bun.sh/install | bash -s -- bun-v${BUN_VERSION}
+
+# Install uv (Astral's fast Python package/environment manager).
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Install Python 3.12 using uv and expose python/python3 shims.
+RUN uv python install ${PYTHON_VERSION} && \
+    ln -sf "$(uv python find ${PYTHON_VERSION})" /usr/local/bin/python3 && \
+    ln -sf /usr/local/bin/python3 /usr/local/bin/python
+
+# Install Rust toolchain plus common development components.
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain ${RUST_TOOLCHAIN} --profile minimal && \
+    rustup component add rustfmt clippy
+
+# Set the project working directory.
+WORKDIR /workspace
+
+# Copy repository files into the image.
+COPY . /workspace
+
+# Install repository dependencies with Bun.
+# We intentionally avoid --frozen-lockfile because this repo currently resolves
+# lockfile updates during install in clean container environments.
+RUN bun install
+
+# Default to an interactive shell.
+CMD ["bash"]
