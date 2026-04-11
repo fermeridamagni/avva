@@ -1,0 +1,50 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "AVVA",
+  "version": "0.1.0",
+  "identifier": "com.fermeridamagni.avva-desktop",
+  "build": {
+    "beforeDevCommand": "bun run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "bun run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "AVVA - Deaf Mute Assistant",
+        "fullscreen": true,
+        "minimizable": false,
+        "resizable": false,
+        "alwaysOnTop": true,
+        "closable": false,
+        "skipTaskbar": true,
+        "browserExtensionsEnabled": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["app", "dmg", "deb", "appimage", "rpm"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/64x64.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico",
+      "icons/icon.png",
+      "Square30x30Logo.png",
+      "Square44x44Logo.png",
+      "Square71x71Logo.png",
+      "Square142x142Logo.png",
+      "Square150x150Logo.png",
+      "Square284x284Logo.png",
+      "Square310x310Logo.png",
+      "SquareLogo.png"
+    ]
+  }
+}

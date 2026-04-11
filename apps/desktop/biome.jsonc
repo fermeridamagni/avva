@@ -1,0 +1,19 @@
+{
+  "$schema": "../../node_modules/@biomejs/biome/configuration_schema.json",
+  "extends": ["ultracite/biome/core", "ultracite/biome/react"],
+  "root": false,
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
+  "overrides": [
+    {
+      // Disable linting for Shadcn UI components since they are auto-generated and may not follow all linting rules.
+      "includes": ["src/components/ui/**/*.{ts,tsx}"],
+      "linter": {
+        "enabled": false
+      }
+    }
+  ]
+}
