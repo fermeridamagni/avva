@@ -3,11 +3,12 @@ import time
 import cv2
 import mediapipe as mp
 from dotenv import load_dotenv
+
+load_dotenv()  # Load environment variables before importing modules that read them.
+
 import lib.utils as utils
 import lib.helpers as helpers
 import lib.handlers as handlers
-
-load_dotenv() # Load environment variables from .env.local
 
 # ---------------------------------------------------------------------------
 # Configuration
