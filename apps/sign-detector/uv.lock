@@ -360,7 +360,7 @@ wheels = [
 [[package]]
 name = "mediapipe"
 version = "0.10.35"
-source = { path = "wheels/mediapipe-0.10.35-cp312-cp312-linux_aarch64.whl" }
+source = { path = ".wheels/mediapipe-0.10.35-cp312-cp312-linux_aarch64.whl" }
 resolution-markers = [
     "platform_machine == 'aarch64' and sys_platform == 'linux'",
 ]
@@ -606,7 +606,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "mediapipe", version = "0.10.33", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine != 'aarch64' or sys_platform != 'linux'" },
-    { name = "mediapipe", version = "0.10.35", source = { path = "wheels/mediapipe-0.10.35-cp312-cp312-linux_aarch64.whl" }, marker = "platform_machine == 'aarch64' and sys_platform == 'linux'" },
+    { name = "mediapipe", version = "0.10.35", source = { path = ".wheels/mediapipe-0.10.35-cp312-cp312-linux_aarch64.whl" }, marker = "platform_machine == 'aarch64' and sys_platform == 'linux'" },
     { name = "opencv-python" },
     { name = "python-dotenv" },
     { name = "websocket-client" },
@@ -615,7 +615,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "mediapipe", marker = "platform_machine != 'aarch64' or sys_platform != 'linux'", specifier = ">=0.10.33,<0.11" },
-    { name = "mediapipe", marker = "platform_machine == 'aarch64' and sys_platform == 'linux'", path = "wheels/mediapipe-0.10.35-cp312-cp312-linux_aarch64.whl" },
+    { name = "mediapipe", marker = "platform_machine == 'aarch64' and sys_platform == 'linux'", path = ".wheels/mediapipe-0.10.35-cp312-cp312-linux_aarch64.whl" },
     { name = "opencv-python", specifier = "==4.13.0.92" },
     { name = "python-dotenv", specifier = "==1.2.2" },
     { name = "websocket-client", specifier = "==1.9.0" },
