@@ -2,6 +2,34 @@
 
 ## Development
 
+### Launch Commands
+
+#### Sign Detector (Python)
+
+```bash
+# Navigate to the sign-detector app directory
+cd apps/sign-detector
+
+# Install dependencies
+uv sync
+
+# Run the application
+uv run src/main.py
+```
+
+#### Desktop App (Tauri v2 with Typescript and React)
+
+```bash 
+# Navigate to the desktop-app directory
+cd apps/desktop-app
+
+# Install dependencies
+bun install
+
+# Run the application
+bun run tauri dev
+```
+
 ### Rules
 
 - Document everything, including code, functions and classes.
