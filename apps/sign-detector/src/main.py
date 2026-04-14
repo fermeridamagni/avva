@@ -7,8 +7,8 @@ from dotenv import load_dotenv
 load_dotenv()  # Load environment variables before importing modules that read them.
 
 import lib.utils as utils
-import lib.helpers as helpers
-import lib.handlers as handlers
+from lib.helpers import detect_one_hand_gesture, detect_two_hand_gesture
+from lib.handlers import send_to_server
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -83,53 +83,39 @@ def main():
                     color = (200, 200, 200)
 
                     # Check for two-hand gestures first (higher priority)
-                    two_hand_gesture = helpers.detect_two_hand_gesture(
-                        results.hand_landmarks)
+                    one_hand_gesture = detect_one_hand_gesture(results.hand_landmarks)
+                    two_hand_gesture = detect_two_hand_gesture(results.hand_landmarks)
 
                     if two_hand_gesture:
                         current_sign, label, color = two_hand_gesture
-                    else:
-                        # Fall back to single-hand gestures (use first detected hand)
-                        landmarks = results.hand_landmarks[0]
-
-                        if helpers.is_hand_open(landmarks):
-                            current_sign = "ALL_ON"
-                            label = "Turn All ON (Open Hand)"
-                            color = (0, 255, 255)
-                        elif helpers.is_hand_closed(landmarks):
-                            current_sign = "ALL_OFF"
-                            label = "Turn All OFF (Fist)"
-                            color = (0, 0, 255)
-                        elif helpers.is_thumb_open(landmarks):
-                            current_sign = "LIGHTS_TOGGLE"
-                            label = "Power On/Off lights"
-                            color = (0, 255, 0)
-                        elif helpers.is_middle_and_index_open(landmarks):
-                            current_sign = "FAN_TOGGLE"
-                            label = "Power On/Off Fan"
-                            color = (255, 0, 0)
-                        elif helpers.is_pinky_open(landmarks):
-                            current_sign = "DEVICE_3"
-                            label = "Toggle Device 3 (Pinky)"
-                            color = (255, 0, 255)
+                    elif one_hand_gesture:
+                        current_sign, label, color = one_hand_gesture
 
                     if current_sign != last_sign and current_sign != "NONE":
-                        handlers.send_to_server(current_sign)
+                        send_to_server(current_sign)
                     last_sign = current_sign
 
-                    cv2.putText(frame, label, (30, 80),
-                                cv2.FONT_HERSHEY_SIMPLEX, 1.5, color, 3)
+                    cv2.putText(
+                        frame, label, (30, 80), cv2.FONT_HERSHEY_SIMPLEX, 1.5, color, 3
+                    )
 
                     # Draw skeleton for all detected hands
                     for hand_landmarks in results.hand_landmarks:
                         utils.draw_skeleton(
-                            frame, hand_landmarks, utils.HAND_CONNECTIONS)
+                            frame, hand_landmarks, utils.HAND_CONNECTIONS
+                        )
                 else:
                     # No hand detected - show a hint.
-                    cv2.putText(frame, "No hand detected", (30, 50),
-                                cv2.FONT_HERSHEY_SIMPLEX, 1, (100,
-                                                              100, 255), 2,
-                                cv2.LINE_AA)
+                    cv2.putText(
+                        frame,
+                        "No hand detected",
+                        (30, 50),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        1,
+                        (100, 100, 255),
+                        2,
+                        cv2.LINE_AA,
+                    )
 
                 cv2.imshow("Hand Landmarks Debug", frame)
 
