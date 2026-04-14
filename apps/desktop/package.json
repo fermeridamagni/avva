@@ -16,6 +16,7 @@
     "@magnidev/tailwindcss-utils": "^1.0.2",
     "@tauri-apps/api": "^2.10.1",
     "@tauri-apps/plugin-opener": "^2.5.3",
+    "class-variance-authority": "^0.7.1",
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
     "lucide-react": "^1.8.0",
