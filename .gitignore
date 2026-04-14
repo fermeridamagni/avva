@@ -37,6 +37,7 @@ yarn-error.log*
 # Python
 __pycache__/
 .venv/
+.ruff_cache/
 
 # App specific
 hand_landmarker.task
