@@ -1,11 +1,8 @@
 {
   "recommendations": [
     "biomejs.biome",
-    "fermeridamagni.arduino-unified",
+    "charliermarsh.ruff",
     "rust-lang.rust-analyzer",
-    "ms-python.python",
-    "ms-python.debugpy",
-    "ms-python.vscode-pylance",
-    "ms-python.vscode-python-envs"
+    "fermeridamagni.arduino-unified"
   ]
 }

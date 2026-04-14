@@ -10,6 +10,11 @@ dependencies = [
   "python-dotenv==1.2.2"
 ]
 
+[dependency-groups]
+dev = [
+    "ruff>=0.15.10",
+]
+
 [tool.uv.sources]
 mediapipe = [
   { path = ".wheels/mediapipe-0.10.35-cp312-cp312-linux_aarch64.whl", marker = "sys_platform == 'linux' and platform_machine == 'aarch64'" }
