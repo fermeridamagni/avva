@@ -30,6 +30,19 @@ bun install
 bun run tauri dev
 ```
 
+#### Demo API (Hono with Typescript)
+
+```bash
+# Navigate to the demo-api directory
+cd apps/demo-api
+
+# Install dependencies
+bun install
+
+# Run the application
+bun run dev
+```
+
 ### Rules
 
 - Document everything, including code, functions and classes.
