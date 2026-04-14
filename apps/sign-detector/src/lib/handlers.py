@@ -1,7 +1,6 @@
 import json
 import threading
 import os
-import time
 from websocket import create_connection
 
 WS_SERVER_URL = os.getenv("WS_SERVER_URL")
@@ -10,11 +9,12 @@ WS_SERVER_URL = os.getenv("WS_SERVER_URL")
 _ws = None
 _ws_lock = threading.Lock()
 
+
 def _get_connection():
     global _ws
     if not WS_SERVER_URL:
         return None
-        
+
     if _ws is None or not _ws.connected:
         try:
             print(f"Connecting to WebSocket Server: {WS_SERVER_URL}")
@@ -25,6 +25,7 @@ def _get_connection():
             print(f"Failed to connect to WebSocket server: {e}")
             _ws = None
     return _ws
+
 
 def _send_request(sign: str):
     """Send a single sign event to the WebSocket server over a persistent connection."""
@@ -47,8 +48,7 @@ def _send_request(sign: str):
                 _ws.close()
                 _ws = None
 
+
 def send_to_server(sign: str):
     """Send the detected sign to the server via WebSocket asynchronously."""
     threading.Thread(target=_send_request, args=(sign,), daemon=True).start()
-
-  

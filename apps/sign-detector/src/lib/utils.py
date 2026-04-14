@@ -4,24 +4,40 @@ import cv2
 
 
 # Colors (BGR format for OpenCV).
-COLOR_BONE = (0, 255, 0)        # Green lines between joints.
-COLOR_JOINT = (0, 0, 255)       # Red circles at each joint.
-COLOR_LABEL = (255, 255, 255)   # White text for landmark labels.
-COLOR_COORD = (0, 255, 255)     # Yellow text for the coordinate panel.
+COLOR_BONE = (0, 255, 0)  # Green lines between joints.
+COLOR_JOINT = (0, 0, 255)  # Red circles at each joint.
+COLOR_LABEL = (255, 255, 255)  # White text for landmark labels.
+COLOR_COORD = (0, 255, 255)  # Yellow text for the coordinate panel.
 
 # Skeleton connections (pairs of landmark indices that should be joined by a
 # line).  These follow the standard MediaPipe hand topology.
 HAND_CONNECTIONS: list[tuple[int, int]] = [
     # Thumb
-    (0, 1), (1, 2), (2, 3), (3, 4),
+    (0, 1),
+    (1, 2),
+    (2, 3),
+    (3, 4),
     # Index finger
-    (0, 5), (5, 6), (6, 7), (7, 8),
+    (0, 5),
+    (5, 6),
+    (6, 7),
+    (7, 8),
     # Middle finger
-    (5, 9), (9, 10), (10, 11), (11, 12),
+    (5, 9),
+    (9, 10),
+    (10, 11),
+    (11, 12),
     # Ring finger
-    (9, 13), (13, 14), (14, 15), (15, 16),
+    (9, 13),
+    (13, 14),
+    (14, 15),
+    (15, 16),
     # Pinky
-    (13, 17), (0, 17), (17, 18), (18, 19), (19, 20),
+    (13, 17),
+    (0, 17),
+    (17, 18),
+    (18, 19),
+    (19, 20),
 ]
 
 # Human-readable landmark names, indexed 0-20.
@@ -49,9 +65,11 @@ LANDMARK_NAMES: list[str] = [
     "PINKY_TIP",
 ]
 
+
 def distance(a, b):
     """Euclidean distance between two landmarks (using x, y)."""
     return math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2)
+
 
 # ---------------------------------------------------------------------------
 # Drawing helpers
@@ -73,17 +91,23 @@ def draw_skeleton(frame, landmarks, connections):
 
     # Draw bones (lines).
     for start_idx, end_idx in connections:
-        cv2.line(frame, pixel_coords[start_idx], pixel_coords[end_idx],
-                 COLOR_BONE, 2)
+        cv2.line(frame, pixel_coords[start_idx], pixel_coords[end_idx], COLOR_BONE, 2)
 
     # Draw joints (circles) and index numbers.
     for idx, (px, py) in enumerate(pixel_coords):
         cv2.circle(frame, (px, py), 6, COLOR_JOINT, -1)
         # Place the landmark index slightly above-right of the dot.
-        cv2.putText(frame, str(idx), (px + 8, py - 8),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.4, COLOR_LABEL, 1,
-                    cv2.LINE_AA)
-        
+        cv2.putText(
+            frame,
+            str(idx),
+            (px + 8, py - 8),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.4,
+            COLOR_LABEL,
+            1,
+            cv2.LINE_AA,
+        )
+
 
 def draw_coordinate_panel(frame, landmarks):
     """Render a translucent overlay on the left side showing all coordinates.
@@ -105,17 +129,32 @@ def draw_coordinate_panel(frame, landmarks):
     cv2.addWeighted(overlay, 0.55, frame, 0.45, 0, frame)
 
     # Title
-    cv2.putText(frame, "Landmark Coordinates (normalized)", (8, 18),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLOR_COORD, 1, cv2.LINE_AA)
+    cv2.putText(
+        frame,
+        "Landmark Coordinates (normalized)",
+        (8, 18),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.5,
+        COLOR_COORD,
+        1,
+        cv2.LINE_AA,
+    )
 
     # One line per landmark.
     for idx, lm in enumerate(landmarks):
         text = f"{idx:2d} {LANDMARK_NAMES[idx]:<20s} x={lm.x:.3f} y={lm.y:.3f} z={lm.z:.3f}"
         y_pos = 40 + idx * 22
-        cv2.putText(frame, text, (8, y_pos),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.38, COLOR_COORD, 1,
-                    cv2.LINE_AA)
-        
+        cv2.putText(
+            frame,
+            text,
+            (8, y_pos),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.38,
+            COLOR_COORD,
+            1,
+            cv2.LINE_AA,
+        )
+
 
 # ---------------------------------------------------------------------------
 # Printing helpers
@@ -134,7 +173,9 @@ def print_coordinates_table(landmarks):
     print(header)
     print(separator)
     for idx, lm in enumerate(landmarks):
-        print(f"{idx:3d}  {LANDMARK_NAMES[idx]:<22s}  {lm.x:8.4f}  {lm.y:8.4f}  {lm.z:8.4f}")
+        print(
+            f"{idx:3d}  {LANDMARK_NAMES[idx]:<22s}  {lm.x:8.4f}  {lm.y:8.4f}  {lm.z:8.4f}"
+        )
     print(separator)
 
 
@@ -155,7 +196,7 @@ def getModel():
 
         print(f"Downloading HandLandmarker model to {MODEL_PATH}...")
         model_url = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task"
-        
+
         urllib.request.urlretrieve(model_url, MODEL_PATH)
         print("Download complete.")
 
