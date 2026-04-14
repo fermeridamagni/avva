@@ -2,6 +2,9 @@ import json
 import threading
 import os
 from websocket import create_connection
+from dotenv import load_dotenv
+
+load_dotenv()  # Load environment variables before importing modules that read them.
 
 WS_SERVER_URL = os.getenv("WS_SERVER_URL")
 

@@ -3,12 +3,11 @@ import time
 import cv2
 import mediapipe as mp
 from dotenv import load_dotenv
-
-load_dotenv()  # Load environment variables before importing modules that read them.
-
 import lib.utils as utils
 from lib.helpers import detect_one_hand_gesture, detect_two_hand_gesture
 from lib.handlers import send_to_server
+
+load_dotenv()  # Load environment variables before importing modules that read them.
 
 # ---------------------------------------------------------------------------
 # Configuration
