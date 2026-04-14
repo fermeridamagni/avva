@@ -101,6 +101,9 @@ ${colorConfig
 
 const ChartTooltip = RechartsPrimitive.Tooltip;
 
+/**
+ * Renders tooltip content for charts with customizable formatting and indicators.
+ */
 function ChartTooltipContent({
   active,
   payload,
@@ -115,13 +118,27 @@ function ChartTooltipContent({
   color,
   nameKey,
   labelKey,
-}: React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
+}: Omit<
+  React.ComponentProps<typeof RechartsPrimitive.Tooltip>,
+  "payload" | "label"
+> &
   React.ComponentProps<"div"> & {
     hideLabel?: boolean;
     hideIndicator?: boolean;
     indicator?: "line" | "dot" | "dashed";
     nameKey?: string;
     labelKey?: string;
+    payload?: Array<{
+      dataKey?: string;
+      name?: string;
+      value?: number;
+      type?: string;
+      color?: string;
+      payload?: Record<string, unknown>;
+      fill?: string;
+      graphicalItemId?: string | number;
+    }>;
+    label?: string | React.ReactNode;
   }) {
   const { config } = useChart();
 
@@ -141,7 +158,7 @@ function ChartTooltipContent({
     if (labelFormatter) {
       return (
         <div className={cn("font-medium", labelClassName)}>
-          {labelFormatter(value, payload)}
+          {labelFormatter(value, payload as any)}
         </div>
       );
     }
@@ -177,8 +194,8 @@ function ChartTooltipContent({
       {nestLabel ? null : tooltipLabel}
       <div className="grid gap-1.5">
         {payload
-          .filter((item) => item.type !== "none")
-          .map((item, index) => {
+          .filter((item: any) => item.type !== "none")
+          .map((item: any, index: number) => {
             const key = `${nameKey || item.name || item.dataKey || "value"}`;
             const itemConfig = getPayloadConfigFromPayload(config, item, key);
             const indicatorColor = color || item.payload.fill || item.color;
@@ -201,7 +218,7 @@ function ChartTooltipContent({
                       !hideIndicator && (
                         <div
                           className={cn(
-                            "shrink-0 rounded-[2px] border-(--color-border) bg-(--color-bg)",
+                            "shrink-0 rounded-xs border-(--color-border) bg-(--color-bg)",
                             {
                               "h-2.5 w-2.5": indicator === "dot",
                               "w-1": indicator === "line",
@@ -249,17 +266,26 @@ function ChartTooltipContent({
 
 const ChartLegend = RechartsPrimitive.Legend;
 
+/**
+ * Renders legend content for charts with customizable icon display.
+ */
 function ChartLegendContent({
   className,
   hideIcon = false,
   payload,
   verticalAlign = "bottom",
   nameKey,
-}: React.ComponentProps<"div"> &
-  Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
-    hideIcon?: boolean;
-    nameKey?: string;
-  }) {
+}: React.ComponentProps<"div"> & {
+  hideIcon?: boolean;
+  nameKey?: string;
+  payload?: Array<{
+    dataKey?: string;
+    value?: string | number;
+    type?: string;
+    color?: string;
+  }>;
+  verticalAlign?: "top" | "bottom";
+}) {
   const { config } = useChart();
 
   if (!payload?.length) {
@@ -275,8 +301,8 @@ function ChartLegendContent({
       )}
     >
       {payload
-        .filter((item) => item.type !== "none")
-        .map((item) => {
+        .filter((item: any) => item.type !== "none")
+        .map((item: any) => {
           const key = `${nameKey || item.dataKey || "value"}`;
           const itemConfig = getPayloadConfigFromPayload(config, item, key);
 
@@ -291,7 +317,7 @@ function ChartLegendContent({
                 <itemConfig.icon />
               ) : (
                 <div
-                  className="h-2 w-2 shrink-0 rounded-[2px]"
+                  className="h-2 w-2 shrink-0 rounded-xs"
                   style={{
                     backgroundColor: item.color,
                   }}
