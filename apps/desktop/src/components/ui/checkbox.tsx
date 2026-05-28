@@ -1,9 +1,9 @@
 "use client";
 
-import { cn } from "@magnidev/tailwindcss-utils";
 import { CheckIcon } from "lucide-react";
 import { Checkbox as CheckboxPrimitive } from "radix-ui";
 import type * as React from "react";
+import { cn } from "tailwind-variants";
 
 function Checkbox({
   className,

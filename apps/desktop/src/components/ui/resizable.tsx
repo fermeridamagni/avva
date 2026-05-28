@@ -1,7 +1,7 @@
 "use client";
 
-import { cn } from "@magnidev/tailwindcss-utils";
 import * as ResizablePrimitive from "react-resizable-panels";
+import { cn } from "tailwind-variants";
 
 function ResizablePanelGroup({
   className,

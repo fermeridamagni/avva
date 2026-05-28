@@ -1,7 +1,5 @@
-"use client";
-
-import { cn } from "@magnidev/tailwindcss-utils";
 import { useEffect, useImperativeHandle, useRef } from "react";
+import { cn } from "tailwind-variants";
 
 const rand = (min: number, max: number): number =>
   Math.random() * (max - min) + min;

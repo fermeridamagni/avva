@@ -1,7 +1,5 @@
-"use client";
-
-import { cn } from "@magnidev/tailwindcss-utils";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { cn } from "tailwind-variants";
 
 type MouseGravity = "attract" | "repel";
 type GlowAnimation = "instant" | "ease" | "spring";

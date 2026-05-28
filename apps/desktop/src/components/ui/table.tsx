@@ -1,7 +1,7 @@
 "use client";
 
-import { cn } from "@magnidev/tailwindcss-utils";
 import type * as React from "react";
+import { cn } from "tailwind-variants";
 
 function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (

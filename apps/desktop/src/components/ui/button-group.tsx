@@ -1,6 +1,6 @@
-import { cn } from "@magnidev/tailwindcss-utils";
 import { cva, type VariantProps } from "class-variance-authority";
 import { Slot } from "radix-ui";
+import { cn } from "tailwind-variants";
 import { Separator } from "@/components/ui/separator";
 
 const buttonGroupVariants = cva(

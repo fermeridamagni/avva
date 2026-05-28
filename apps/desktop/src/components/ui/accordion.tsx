@@ -1,7 +1,7 @@
-import { cn } from "@magnidev/tailwindcss-utils";
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { Accordion as AccordionPrimitive } from "radix-ui";
 import type * as React from "react";
+import { cn } from "tailwind-variants";
 
 function Accordion({
   className,

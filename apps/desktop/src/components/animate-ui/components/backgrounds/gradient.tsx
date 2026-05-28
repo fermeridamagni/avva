@@ -1,7 +1,5 @@
-"use client";
-
-import { cn } from "@magnidev/tailwindcss-utils";
 import { type HTMLMotionProps, motion } from "motion/react";
+import { cn } from "tailwind-variants";
 
 type GradientBackgroundProps = HTMLMotionProps<"div">;
 

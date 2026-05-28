@@ -1,8 +1,8 @@
 "use client";
 
-import { cn } from "@magnidev/tailwindcss-utils";
 import { Label as LabelPrimitive } from "radix-ui";
 import type * as React from "react";
+import { cn } from "tailwind-variants";
 
 function Label({
   className,

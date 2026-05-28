@@ -1,7 +1,7 @@
-import { cn } from "@magnidev/tailwindcss-utils";
 import { CheckIcon, ChevronRightIcon } from "lucide-react";
 import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui";
 import type * as React from "react";
+import { cn } from "tailwind-variants";
 
 function DropdownMenu({
   ...props

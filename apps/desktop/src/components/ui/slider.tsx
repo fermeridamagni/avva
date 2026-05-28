@@ -1,8 +1,8 @@
 "use client";
 
-import { cn } from "@magnidev/tailwindcss-utils";
 import { Slider as SliderPrimitive } from "radix-ui";
 import * as React from "react";
+import { cn } from "tailwind-variants";
 
 function Slider({
   className,

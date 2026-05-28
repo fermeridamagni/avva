@@ -1,11 +1,11 @@
 "use client";
 
-import { cn } from "@magnidev/tailwindcss-utils";
 import useEmblaCarousel, {
   type UseEmblaCarouselType,
 } from "embla-carousel-react";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import * as React from "react";
+import { cn } from "tailwind-variants";
 import { Button } from "@/components/ui/button";
 
 type CarouselApi = UseEmblaCarouselType[1];

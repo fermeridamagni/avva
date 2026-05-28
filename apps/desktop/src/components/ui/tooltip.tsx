@@ -1,6 +1,6 @@
-import { cn } from "@magnidev/tailwindcss-utils";
 import { Tooltip as TooltipPrimitive } from "radix-ui";
 import type * as React from "react";
+import { cn } from "tailwind-variants";
 
 function TooltipProvider({
   delayDuration = 0,

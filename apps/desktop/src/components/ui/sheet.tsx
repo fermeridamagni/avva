@@ -1,9 +1,9 @@
 "use client";
 
-import { cn } from "@magnidev/tailwindcss-utils";
 import { XIcon } from "lucide-react";
 import { Dialog as SheetPrimitive } from "radix-ui";
 import type * as React from "react";
+import { cn } from "tailwind-variants";
 import { Button } from "@/components/ui/button";
 
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {

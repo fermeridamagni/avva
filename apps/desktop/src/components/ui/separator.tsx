@@ -1,6 +1,6 @@
-import { cn } from "@magnidev/tailwindcss-utils";
 import { Separator as SeparatorPrimitive } from "radix-ui";
 import type * as React from "react";
+import { cn } from "tailwind-variants";
 
 function Separator({
   className,
