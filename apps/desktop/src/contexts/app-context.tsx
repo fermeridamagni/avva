@@ -72,6 +72,35 @@ export function AppProvider() {
     };
   }, []);
 
+  // Handle inactivity to turn on the screen saver
+  useEffect(() => {
+    let inactivityTimer: ReturnType<typeof setTimeout>;
+
+    const resetTimer = () => {
+      clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(() => {
+        setIsScreenSaverActive(true);
+      }, 120_000); // 2 minutes
+    };
+
+    resetTimer();
+
+    window.addEventListener("mousemove", resetTimer);
+    window.addEventListener("mousedown", resetTimer);
+    window.addEventListener("keydown", resetTimer);
+    window.addEventListener("touchstart", resetTimer);
+    window.addEventListener("wheel", resetTimer);
+
+    return () => {
+      clearTimeout(inactivityTimer);
+      window.removeEventListener("mousemove", resetTimer);
+      window.removeEventListener("mousedown", resetTimer);
+      window.removeEventListener("keydown", resetTimer);
+      window.removeEventListener("touchstart", resetTimer);
+      window.removeEventListener("wheel", resetTimer);
+    };
+  }, []);
+
   // Periodically verify actual internet connectivity via the Tauri backend.
   // The browser's `navigator.onLine` can be optimistic (e.g. connected to
   // WiFi but no internet access), so this acts as a ground-truth check.
