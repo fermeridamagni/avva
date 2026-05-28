@@ -1,10 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import DefaultScreen from "@/screens/default-screen";
+import { AppProvider } from "@/contexts/app-context";
 import "@/styles/globals.css";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <DefaultScreen />
+    <AppProvider />
   </React.StrictMode>
 );
