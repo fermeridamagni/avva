@@ -2,8 +2,10 @@ import ScreenSaver from "@components/screen-saver";
 import StatusBar from "@components/status-bar";
 import { TabProvider } from "@components/tab-provider";
 import { invoke } from "@tauri-apps/api/core";
+import { type Platform, platform } from "@tauri-apps/plugin-os";
 import { AnimatePresence } from "motion/react";
 import { createContext, useContext, useEffect, useState } from "react";
+import { cn } from "tailwind-variants";
 
 export interface User {
   email?: string;
@@ -29,6 +31,7 @@ export const tabs: Tab[] = [
 ];
 
 export interface AppContextType {
+  currentPlatform: Platform;
   currentTab: Tab;
   handleChangeTab: (tabId: string | undefined) => void;
   handleSignIn: () => void;
@@ -50,6 +53,8 @@ export function useAppContext() {
 }
 
 export function AppProvider() {
+  const currentPlatform = platform();
+
   const [isScreenSaverActive, setIsScreenSaverActive] = useState(true);
 
   const [isWifiAvailable, setIsWifiAvailable] = useState<boolean>(
@@ -145,6 +150,7 @@ export function AppProvider() {
   };
 
   const value: AppContextType = {
+    currentPlatform,
     isWifiAvailable,
     currentTab,
     handleChangeTab,
@@ -155,7 +161,14 @@ export function AppProvider() {
 
   return (
     <AppContext.Provider value={value}>
-      <main className="relative z-0 h-screen max-h-120 w-full min-w-200 max-w-200 animate-in">
+      <main
+        className={cn(
+          "relative z-0 flex h-screen w-screen animate-in flex-col overflow-hidden",
+          {
+            "max-h-120 max-w-200": currentPlatform === "macos", // Just for local developmnent
+          }
+        )}
+      >
         <AnimatePresence>
           {isScreenSaverActive ? (
             <ScreenSaver
