@@ -4,7 +4,7 @@ import type { Tab } from "@/contexts/app-context";
 
 export function TabProvider({ currentTab }: { currentTab: Tab }) {
   return (
-    <div className="relative h-full w-full overflow-hidden">
+    <div className="relative h-[calc(100%-33px)] w-full flex-1 overflow-hidden">
       <AnimatePresence>
         <CurrentTabComponent currentTab={currentTab} key={currentTab.id} />
       </AnimatePresence>
