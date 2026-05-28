@@ -4,9 +4,9 @@
   "version": "0.1.0",
   "identifier": "com.fermeridamagni.avva-desktop",
   "build": {
-    "beforeDevCommand": "bun run dev",
+    "beforeDevCommand": "bun run vite:dev",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "bun run build",
+    "beforeBuildCommand": "bun run vite:build",
     "frontendDist": "../dist"
   },
   "app": {

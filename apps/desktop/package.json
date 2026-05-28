@@ -5,10 +5,10 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "tauri": "tauri"
+    "dev": "bun --bun tauri dev",
+    "build": "bun --bun tauri build",
+    "vite:dev": "vite",
+    "vite:build": "tsc && vite build"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.0",
