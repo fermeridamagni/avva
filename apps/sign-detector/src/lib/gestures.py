@@ -67,18 +67,11 @@ def is_index_open(landmarks):
     index_open = distance(landmarks[8], wrist) > distance(landmarks[6], wrist)
 
     # Check that other fingers are not open (to distinguish from fully open hand)
-    thumb_open = distance(landmarks[4], wrist) > distance(landmarks[3], wrist)
     middle_open = distance(landmarks[12], wrist) > distance(landmarks[10], wrist)
     ring_open = distance(landmarks[16], wrist) > distance(landmarks[14], wrist)
     pinky_open = distance(landmarks[20], wrist) > distance(landmarks[18], wrist)
 
-    return (
-        index_open
-        and not thumb_open
-        and not middle_open
-        and not ring_open
-        and not pinky_open
-    )
+    return index_open and not middle_open and not ring_open and not pinky_open
 
 
 def is_middle_open(landmarks):
@@ -88,19 +81,11 @@ def is_middle_open(landmarks):
     # Middle: TIP (12) farther from wrist than PIP (10)
     middle_open = distance(landmarks[12], wrist) > distance(landmarks[10], wrist)
 
-    # Check that other fingers are not open (to distinguish from fully open hand)
-    thumb_open = distance(landmarks[4], wrist) > distance(landmarks[3], wrist)
     index_open = distance(landmarks[8], wrist) > distance(landmarks[6], wrist)
     ring_open = distance(landmarks[16], wrist) > distance(landmarks[14], wrist)
     pinky_open = distance(landmarks[20], wrist) > distance(landmarks[18], wrist)
 
-    return (
-        middle_open
-        and not thumb_open
-        and not index_open
-        and not ring_open
-        and not pinky_open
-    )
+    return middle_open and not index_open and not ring_open and not pinky_open
 
 
 def is_ring_open(landmarks):
@@ -111,18 +96,11 @@ def is_ring_open(landmarks):
     ring_open = distance(landmarks[16], wrist) > distance(landmarks[14], wrist)
 
     # Check that other fingers are not open (to distinguish from fully open hand)
-    thumb_open = distance(landmarks[4], wrist) > distance(landmarks[3], wrist)
     index_open = distance(landmarks[8], wrist) > distance(landmarks[6], wrist)
     middle_open = distance(landmarks[12], wrist) > distance(landmarks[10], wrist)
     pinky_open = distance(landmarks[20], wrist) > distance(landmarks[18], wrist)
 
-    return (
-        ring_open
-        and not thumb_open
-        and not index_open
-        and not middle_open
-        and not pinky_open
-    )
+    return ring_open and not index_open and not middle_open and not pinky_open
 
 
 def is_pinky_open(landmarks):
@@ -133,15 +111,8 @@ def is_pinky_open(landmarks):
     pinky_open = distance(landmarks[20], wrist) > distance(landmarks[18], wrist)
 
     # Check that other fingers are not open (to distinguish from fully open hand)
-    thumb_open = distance(landmarks[4], wrist) > distance(landmarks[3], wrist)
     index_open = distance(landmarks[8], wrist) > distance(landmarks[6], wrist)
     middle_open = distance(landmarks[12], wrist) > distance(landmarks[10], wrist)
     ring_open = distance(landmarks[16], wrist) > distance(landmarks[14], wrist)
 
-    return (
-        pinky_open
-        and not thumb_open
-        and not index_open
-        and not middle_open
-        and not ring_open
-    )
+    return pinky_open and not index_open and not middle_open and not ring_open

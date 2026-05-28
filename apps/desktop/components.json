@@ -16,7 +16,7 @@
   "menuAccent": "subtle",
   "aliases": {
     "components": "@/components",
-    "utils": "@magnidev/tailwindcss-utils",
+    "utils": "@/utils",
     "ui": "@/components/ui",
     "lib": "@/lib",
     "hooks": "@/hooks"
