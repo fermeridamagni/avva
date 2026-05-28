@@ -88,6 +88,7 @@
     @apply bg-black w-full grid place-items-center min-h-screen;
   }
   html {
+    font-size: 16px;
     @apply font-sans;
   }
   main {
