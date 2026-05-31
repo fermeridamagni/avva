@@ -13,8 +13,8 @@ cd apps/sign-detector
 # Install dependencies
 uv sync
 
-# Run the application
-uv run src/main.py
+# Run the application (use libcamerify on Raspberry Pi for camera access)
+libcamerify uv run src/main.py
 ```
 
 #### Desktop App (Tauri v2 with Typescript and React)

@@ -41,6 +41,15 @@ arm_64bit=1
 
 If your panel is not the official 7" DSI display, use the correct overlay for your hardware from the Raspberry Pi overlay documentation.
 
+## Required Camera settings (`/boot/firmware/config.txt`)
+
+For a camera (like the Arducam IMX415) connected to the secondary MIPI port (CAM1), you must disable auto-detection and specify the correct overlay:
+
+```ini
+camera_auto_detect=0
+dtoverlay=imx415,cam1
+```
+
 ## Example complete `config.txt` block
 
 ```ini
@@ -59,9 +68,24 @@ disable_overscan=1
 [all]
 dtparam=uart0=on
 dtoverlay=vc4-kms-dsi-7inch,dsi0
+
+# Camera
+camera_auto_detect=0
+dtoverlay=imx415,cam1
 ```
 
-## Validate display stack
+## Running OpenCV and MediaPipe scripts
+
+Because the Raspberry Pi Camera Front End outputs raw Bayer data on newer OS versions (like Bookworm and Trixie), standard V4L2 calls in OpenCV will crash or return empty frames. You must run Python scripts that use `cv2.VideoCapture` using the `libcamerify` wrapper.
+
+```bash
+cd apps/sign-detector
+libcamerify uv run src/main.py
+```
+
+*Note: If you run this over SSH, the Python script will automatically map the video window to the Raspberry Pi's physical DSI screen (`DISPLAY=:0`).*
+
+## Validate display and camera stack
 
 After reboot, verify KMS/DSI modules are active:
 
