@@ -45,3 +45,6 @@ hand_landmarker.task
 # Misc
 .DS_Store
 *.pem
+
+# IDEs and editors
+.antigravitycli
