@@ -1,6 +1,7 @@
 import ScreenSaver from "@components/screen-saver";
 import StatusBar from "@components/status-bar";
 import { TabProvider } from "@components/tab-provider";
+import { CalendarProvider } from "@contexts/calendar-context";
 import { invoke } from "@tauri-apps/api/core";
 import { type Platform, platform } from "@tauri-apps/plugin-os";
 import { AnimatePresence } from "motion/react";
@@ -28,6 +29,14 @@ export const tabs: Tab[] = [
     id: "home",
     title: "Inicio",
   },
+  {
+    id: "calendar",
+    title: "Calendario",
+  },
+  {
+    id: "settings",
+    title: "Ajustes",
+  },
 ];
 
 export interface AppContextType {
@@ -37,6 +46,10 @@ export interface AppContextType {
   handleSignIn: () => void;
   handleToggleScreenSaver: (value: boolean) => void;
   isWifiAvailable: boolean;
+  /** Navigate to the next (1) or previous (-1) tab. */
+  navigateTab: (direction: 1 | -1) => void;
+  /** Direction of the last tab transition: 1 = forward, -1 = backward. */
+  swipeDirection: 1 | -1;
   user: User;
 }
 
@@ -62,6 +75,7 @@ export function AppProvider() {
   );
   const [user, setUser] = useState<User>(DEFAULT_USER);
   const [currentTab, setCurrentTab] = useState<Tab>(tabs[0]);
+  const [swipeDirection, setSwipeDirection] = useState<1 | -1>(1);
 
   // React to browser online/offline events for instant UI updates
   useEffect(() => {
@@ -124,6 +138,7 @@ export function AppProvider() {
 
   const handleChangeTab = (tabId: string | undefined) => {
     if (tabId === undefined) {
+      setSwipeDirection(-1);
       setCurrentTab(tabs[0]);
       return;
     }
@@ -131,6 +146,11 @@ export function AppProvider() {
     const tab = tabs.find((t) => t.id === tabId);
 
     if (tab) {
+      // Determine direction based on tab index comparison
+      const currentIndex = tabs.findIndex((t) => t.id === currentTab.id);
+      const nextIndex = tabs.findIndex((t) => t.id === tabId);
+      setSwipeDirection(nextIndex >= currentIndex ? 1 : -1);
+
       localStorage.setItem("lastTabId", tabId); // Persist the last active tab
       setCurrentTab(tab);
       return;
@@ -139,6 +159,21 @@ export function AppProvider() {
     if (!tab) {
       throw new Error(`Tab with id ${tabId} not found`);
     }
+  };
+
+  /** Navigate to the next or previous tab relative to the current one. */
+  const navigateTab = (direction: 1 | -1) => {
+    const currentIndex = tabs.findIndex((t) => t.id === currentTab.id);
+    const nextIndex = currentIndex + direction;
+
+    // Clamp — don't wrap around
+    if (nextIndex < 0 || nextIndex >= tabs.length) {
+      return;
+    }
+
+    setSwipeDirection(direction);
+    setCurrentTab(tabs[nextIndex]);
+    localStorage.setItem("lastTabId", tabs[nextIndex].id);
   };
 
   const handleToggleScreenSaver = (value: boolean) => {
@@ -156,35 +191,39 @@ export function AppProvider() {
     currentTab,
     handleChangeTab,
     handleToggleScreenSaver,
+    navigateTab,
+    swipeDirection,
     user,
     handleSignIn,
   };
 
   return (
     <AppContext.Provider value={value}>
-      <main
-        className={cn(
-          "relative z-0 flex h-screen w-screen animate-in flex-col overflow-hidden",
-          {
-            "max-h-120 max-w-200": currentPlatform === "macos", // Just for local developmnent
-          }
-        )}
-      >
-        <AnimatePresence>
-          {isScreenSaverActive ? (
-            <ScreenSaver
-              handleToggleScreenSaver={handleToggleScreenSaver}
-              isWifiAvailable={isWifiAvailable}
-            />
-          ) : (
-            <>
-              <StatusBar isWifiAvailable={isWifiAvailable} />
-
-              <TabProvider currentTab={currentTab} />
-            </>
+      <CalendarProvider>
+        <main
+          className={cn(
+            "relative z-0 flex h-screen w-screen animate-in flex-col overflow-hidden",
+            {
+              "max-h-120 max-w-200": currentPlatform === "macos", // Just for local developmnent
+            },
           )}
-        </AnimatePresence>
-      </main>
+        >
+          <AnimatePresence>
+            {isScreenSaverActive ? (
+              <ScreenSaver
+                handleToggleScreenSaver={handleToggleScreenSaver}
+                isWifiAvailable={isWifiAvailable}
+              />
+            ) : (
+              <>
+                <StatusBar isWifiAvailable={isWifiAvailable} />
+
+                <TabProvider currentTab={currentTab} />
+              </>
+            )}
+          </AnimatePresence>
+        </main>
+      </CalendarProvider>
     </AppContext.Provider>
   );
 }

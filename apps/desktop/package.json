@@ -12,7 +12,9 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
-    "@fontsource-variable/nunito-sans": "^5.2.7",
+    "@fontsource-variable/comfortaa": "^5.2.8",
+    "@fontsource-variable/fredoka": "^5.2.10",
+    "@fontsource/pacifico": "^5.2.7",
     "@tauri-apps/api": "^2.11.0",
     "@tauri-apps/plugin-opener": "^2.5.4",
     "@tauri-apps/plugin-os": "^2.3.2",

@@ -1,7 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/nunito-sans";
+@import "@fontsource-variable/comfortaa";
+@import "@fontsource-variable/fredoka";
+@import "@fontsource/pacifico";
 
 :root {
   --radius: 0.625rem;
@@ -39,7 +41,9 @@
 }
 
 @theme inline {
-  --font-sans: "Nunito Sans Variable", sans-serif;
+  --font-sans: "Comfortaa Variable", sans-serif;
+  --font-heading: "Fredoka Variable", sans-serif;
+  --font-logo: "Pacifico", cursive;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -93,5 +97,28 @@
   }
   main {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Calendar event indicator dot — appears below the day number */
+@layer components {
+  .mini-calendar-has-event {
+    position: relative;
+  }
+  .mini-calendar-has-event::after {
+    content: "";
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 5px;
+    height: 5px;
+    border-radius: 9999px;
+    background-color: oklch(0.546 0.245 262.881);
+    pointer-events: none;
+  }
+  /* Hide the dot when the day is selected (primary bg makes it invisible) */
+  .mini-calendar-has-event[data-selected="true"]::after {
+    background-color: oklch(0.985 0 0);
   }
 }
