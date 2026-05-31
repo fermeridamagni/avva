@@ -1,5 +1,9 @@
 import os
 import time
+
+# If running over SSH without a display exported, default to the Pi's primary screen
+if os.name == 'posix' and 'DISPLAY' not in os.environ:
+    os.environ['DISPLAY'] = ':0'
 import mediapipe as mp
 import cv2
 from dotenv import load_dotenv

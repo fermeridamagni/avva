@@ -4,8 +4,8 @@ version = "0.1.0"
 description = "A sign detector built with Mediapipe and OpenCV."
 requires-python = ">=3.12"
 dependencies = [
-  "opencv-python==4.13.0.92",
-  "mediapipe>=0.10.33,<0.11",
+  "opencv-python==4.9.0.80",
+  "mediapipe==0.10.18",
   "websocket-client==1.9.0",
   "python-dotenv==1.2.2"
 ]
@@ -13,9 +13,4 @@ dependencies = [
 [dependency-groups]
 dev = [
     "ruff>=0.15.10",
-]
-
-[tool.uv.sources]
-mediapipe = [
-  { path = ".wheels/mediapipe-0.10.35-cp312-cp312-linux_aarch64.whl", marker = "sys_platform == 'linux' and platform_machine == 'aarch64'" }
 ]
