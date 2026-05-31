@@ -1,7 +1,7 @@
 import os
 import time
-import cv2
 import mediapipe as mp
+import cv2
 from dotenv import load_dotenv
 import lib.utils as utils
 from lib.helpers import detect_one_hand_gesture, detect_two_hand_gesture
@@ -15,7 +15,12 @@ load_dotenv()  # Load environment variables before importing modules that read t
 
 # Camera index.  0 is usually the built-in FaceTime HD camera on macOS.
 # If an iPhone is acting as a Continuity Camera, try index 1.
-CAMERA_INDEX = int(os.getenv("CAMERA_INDEX", "0"))
+# Can also be a GStreamer pipeline string or network stream URL.
+camera_env = os.getenv("CAMERA_INDEX", "0")
+try:
+    CAMERA_INDEX = int(camera_env)
+except ValueError:
+    CAMERA_INDEX = camera_env
 
 
 MODEL_PATH = utils.getModel()
