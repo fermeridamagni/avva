@@ -1,6 +1,18 @@
-import { CloudIcon, CloudOffIcon, LoaderCircleIcon } from "lucide-react";
+import { CloudOffIcon, LoaderCircleIcon } from "lucide-react";
+import type { HTMLAttributes } from "react";
+import { tv, type VariantProps } from "tailwind-variants";
 import { useAppContext } from "@/contexts/app-context";
 import { useWeather } from "@/hooks/use-weather";
+
+interface WeatherBadgeProps
+  extends HTMLAttributes<HTMLSpanElement>,
+    VariantProps<typeof variants> {
+  iconSize?: number;
+}
+
+const variants = tv({
+  base: "inline-flex items-center gap-x-2 rounded-xl bg-secondary px-4 py-2 text-base text-white",
+});
 
 /**
  * A pill-shaped badge that displays the current weather for the user's
@@ -11,44 +23,42 @@ import { useWeather } from "@/hooks/use-weather";
  * Self-contained — it owns both the weather data fetching and the display
  * logic, so it can be dropped anywhere in the app without extra wiring.
  */
-export default function WeatherBadge() {
+export default function WeatherBadge({
+  iconSize = 18,
+  className,
+  ...props
+}: WeatherBadgeProps) {
   const { isWifiAvailable } = useAppContext();
   const { weather, isLoading } = useWeather();
 
-  if (!isWifiAvailable) {
+  const classNames = variants({ className });
+
+  if (!(isWifiAvailable && weather)) {
     return (
-      <span className="inline-flex items-center gap-x-2 rounded-xl bg-secondary px-4 py-2 text-white">
-        Clima no disponible <CloudOffIcon size={18} />
+      <span className={classNames} {...props}>
+        Clima no disponible <CloudOffIcon size={iconSize} />
       </span>
     );
   }
 
   if (isLoading) {
     return (
-      <span className="inline-flex items-center gap-x-2 rounded-xl bg-secondary px-4 py-2 text-white">
-        <LoaderCircleIcon className="animate-spin" size={18} />
-      </span>
-    );
-  }
-
-  if (weather) {
-    return (
-      <span className="inline-flex items-center gap-x-2 rounded-xl bg-secondary px-4 py-2 text-white">
-        <span
-          aria-label={weather.condition}
-          className="text-lg leading-none"
-          role="img"
-        >
-          {weather.emoji}
-        </span>
-        {weather.temperature}°C
+      <span className={classNames} {...props}>
+        <LoaderCircleIcon className="animate-spin" size={iconSize} />
       </span>
     );
   }
 
   return (
-    <span className="inline-flex items-center gap-x-2 rounded-xl bg-secondary px-4 py-2 text-white">
-      Clima no disponible <CloudIcon size={18} />
+    <span className={classNames} {...props}>
+      <span
+        aria-label={weather.condition}
+        className="text-lg leading-none"
+        role="img"
+      >
+        {weather.emoji}
+      </span>
+      {weather.temperature}°C
     </span>
   );
 }
