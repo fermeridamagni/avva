@@ -51,11 +51,7 @@ export default function WeatherBadge({
 
   return (
     <span className={classNames} {...props}>
-      <span
-        aria-label={weather.condition}
-        className="text-lg leading-none"
-        role="img"
-      >
+      <span aria-label={weather.condition} className="leading-none" role="img">
         {weather.emoji}
       </span>
       {weather.temperature}°C
