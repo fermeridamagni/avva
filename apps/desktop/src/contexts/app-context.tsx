@@ -131,6 +131,7 @@ export function AppProvider() {
     const tab = tabs.find((t) => t.id === tabId);
 
     if (tab) {
+      localStorage.setItem("lastTabId", tabId); // Persist the last active tab
       setCurrentTab(tab);
       return;
     }
