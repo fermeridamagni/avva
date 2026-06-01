@@ -6,7 +6,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { type Platform, platform } from "@tauri-apps/plugin-os";
 import { AnimatePresence } from "motion/react";
 import { createContext, useContext, useEffect, useState } from "react";
-import { cn } from "tailwind-variants";
+
 
 export interface User {
   email?: string;
@@ -200,14 +200,7 @@ export function AppProvider() {
   return (
     <AppContext.Provider value={value}>
       <CalendarProvider>
-        <main
-          className={cn(
-            "relative z-0 flex h-screen w-screen animate-in flex-col overflow-hidden",
-            {
-              "max-h-120 max-w-200": currentPlatform === "macos", // Just for local developmnent
-            },
-          )}
-        >
+        <main className="relative z-0 flex h-full w-full max-h-[480px] max-w-[800px] animate-in flex-col overflow-hidden bg-background">
           <AnimatePresence>
             {isScreenSaverActive ? (
               <ScreenSaver

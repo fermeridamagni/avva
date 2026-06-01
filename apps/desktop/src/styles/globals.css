@@ -89,7 +89,7 @@
     @apply border-border outline-ring/50 select-none;
   }
   body {
-    @apply bg-black w-full grid place-items-center min-h-screen;
+    @apply bg-black w-full grid place-items-center min-h-screen overflow-hidden;
   }
   html {
     font-size: 16px;
