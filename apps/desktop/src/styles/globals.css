@@ -106,16 +106,16 @@
     position: relative;
   }
   .mini-calendar-has-event::after {
-    content: "";
     position: absolute;
     bottom: 2px;
     left: 50%;
-    transform: translateX(-50%);
     width: 5px;
     height: 5px;
-    border-radius: 9999px;
-    background-color: oklch(0.546 0.245 262.881);
     pointer-events: none;
+    content: "";
+    background-color: oklch(0.546 0.245 262.881);
+    border-radius: 9999px;
+    transform: translateX(-50%);
   }
   /* Hide the dot when the day is selected (primary bg makes it invisible) */
   .mini-calendar-has-event[data-selected="true"]::after {

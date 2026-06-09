@@ -7,7 +7,6 @@ import { type Platform, platform } from "@tauri-apps/plugin-os";
 import { AnimatePresence } from "motion/react";
 import { createContext, useContext, useEffect, useState } from "react";
 
-
 export interface User {
   email?: string;
   id: string;
@@ -200,7 +199,7 @@ export function AppProvider() {
   return (
     <AppContext.Provider value={value}>
       <CalendarProvider>
-        <main className="relative z-0 flex h-full w-full max-h-[480px] max-w-[800px] animate-in flex-col overflow-hidden bg-background">
+        <main className="relative z-0 flex h-full max-h-[480px] w-full max-w-[800px] animate-in flex-col overflow-hidden bg-background">
           <AnimatePresence>
             {isScreenSaverActive ? (
               <ScreenSaver
