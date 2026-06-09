@@ -1,15 +1,18 @@
 import os
+import signal
 import time
 
 # If running over SSH without a display exported, default to the Pi's primary screen
-if os.name == 'posix' and 'DISPLAY' not in os.environ:
-    os.environ['DISPLAY'] = ':0'
-import mediapipe as mp
+if os.name == "posix" and "DISPLAY" not in os.environ:
+    os.environ["DISPLAY"] = ":0"
+
 import cv2
+import mediapipe as mp
 from dotenv import load_dotenv
+
 import lib.utils as utils
-from lib.helpers import detect_one_hand_gesture, detect_two_hand_gesture
 from lib.handlers import send_to_server
+from lib.helpers import detect_one_hand_gesture, detect_two_hand_gesture
 
 load_dotenv()  # Load environment variables before importing modules that read them.
 
@@ -26,6 +29,10 @@ try:
 except ValueError:
     CAMERA_INDEX = camera_env
 
+# Whether to display the OpenCV preview window.
+# Default to "true" for development; set to "false" in production (e.g. on
+# a Raspberry Pi) to skip all GUI operations and improve performance.
+SHOW_PREVIEW = os.getenv("SHOW_PREVIEW", "true").strip().lower() == "true"
 
 MODEL_PATH = utils.getModel()
 
@@ -46,12 +53,27 @@ options = HandLandmarkerOptions(
     min_tracking_confidence=0.5,
 )
 
+# ---------------------------------------------------------------------------
+# Graceful shutdown flag (used in headless mode where cv2.waitKey is skipped)
+# ---------------------------------------------------------------------------
+_running = True
+
+
+def _shutdown_handler(_signum, _frame):
+    """Handle SIGINT/SIGTERM so the main loop exits cleanly in headless mode."""
+    global _running  # noqa: PLW0603
+    _running = False
+
+
+signal.signal(signal.SIGINT, _shutdown_handler)
+signal.signal(signal.SIGTERM, _shutdown_handler)
+
 
 # ---------------------------------------------------------------------------
 # Main loop
 # ---------------------------------------------------------------------------
 def main():
-    """Entry point: open camera, detect hand, display landmarks and coords."""
+    """Entry point: open camera, detect hand gestures, and optionally display a preview."""
     cap = cv2.VideoCapture(CAMERA_INDEX)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
@@ -61,15 +83,20 @@ def main():
         print("ERROR: Could not open camera. Check CAMERA_INDEX.")
         return
 
-    print("Starting camera...")
-    print("Controls:  q = quit  |  p = pause/resume terminal output")
+    mode = "preview" if SHOW_PREVIEW else "headless"
+    print(f"Starting camera in {mode} mode...")
 
-    printing_enabled = True  # Toggle with 'p'.
+    if SHOW_PREVIEW:
+        print("Controls:  q = quit  |  p = pause/resume terminal output")
+    else:
+        print("Running headless — send SIGINT (Ctrl+C) or SIGTERM to stop.")
+
+    printing_enabled = True  # Toggle with 'p' (preview mode only).
     last_sign = "NONE"
 
     try:
         with HandLandmarker.create_from_options(options) as landmarker:
-            while True:
+            while _running:
                 ret, frame = cap.read()
                 if not ret:
                     print("ERROR: Could not read frame. Is the camera in use?")
@@ -103,17 +130,24 @@ def main():
                         send_to_server(current_sign)
                     last_sign = current_sign
 
-                    cv2.putText(
-                        frame, label, (30, 80), cv2.FONT_HERSHEY_SIMPLEX, 1.5, color, 3
-                    )
-
-                    # Draw skeleton for all detected hands
-                    for hand_landmarks in results.hand_landmarks:
-                        utils.draw_skeleton(
-                            frame, hand_landmarks, utils.HAND_CONNECTIONS
+                    if SHOW_PREVIEW:
+                        cv2.putText(
+                            frame,
+                            label,
+                            (30, 80),
+                            cv2.FONT_HERSHEY_SIMPLEX,
+                            1.5,
+                            color,
+                            3,
                         )
-                else:
-                    # No hand detected - show a hint.
+
+                        # Draw skeleton for all detected hands
+                        for hand_landmarks in results.hand_landmarks:
+                            utils.draw_skeleton(
+                                frame, hand_landmarks, utils.HAND_CONNECTIONS
+                            )
+                elif SHOW_PREVIEW:
+                    # No hand detected — show a hint (preview only).
                     cv2.putText(
                         frame,
                         "No hand detected",
@@ -125,19 +159,24 @@ def main():
                         cv2.LINE_AA,
                     )
 
-                cv2.imshow("Hand Landmarks Debug", frame)
+                if SHOW_PREVIEW:
+                    cv2.imshow("Hand Landmarks Debug", frame)
 
-                key = cv2.waitKey(5) & 0xFF
-                if key == ord("q"):
-                    break
-                elif key == ord("p"):
-                    printing_enabled = not printing_enabled
-                    state = "ON" if printing_enabled else "OFF"
-                    print(f"[Terminal output {state}]")
+                    key = cv2.waitKey(5) & 0xFF
+                    if key == ord("q"):
+                        break
+                    elif key == ord("p"):
+                        printing_enabled = not printing_enabled
+                        state = "ON" if printing_enabled else "OFF"
+                        print(f"[Terminal output {state}]")
+                else:
+                    # Small sleep to avoid busy-spinning in headless mode.
+                    time.sleep(0.005)
 
     finally:
         cap.release()
-        cv2.destroyAllWindows()
+        if SHOW_PREVIEW:
+            cv2.destroyAllWindows()
         print("Camera released. Goodbye.")
 
 
