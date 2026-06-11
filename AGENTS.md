@@ -3,6 +3,8 @@
 ## Rules
 
 - Document and explain why the code is for.
+- Get up-to-date info with the Context7 MCP.
+- Get pre-indexed repository knowledge about the project using the Codegraph MCP.
 - Always use UV as the package manager for Python development.
 - Always use TypeScript instead of Javascript.
 - Always use Bun as the package manager and runtime environment instead of npm or Node.js.
