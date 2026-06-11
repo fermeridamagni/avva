@@ -2,6 +2,8 @@ import os
 import signal
 import time
 
+import numpy as np
+
 # If running over SSH without a display exported, default to the Pi's primary screen
 if os.name == "posix" and "DISPLAY" not in os.environ:
     os.environ["DISPLAY"] = ":0"
@@ -29,6 +31,12 @@ try:
 except ValueError:
     CAMERA_INDEX = camera_env
 
+# Capture resolution — defaults to 640×480 which is 3.3× fewer pixels than
+# 1280×720, drastically reducing decode/flip/convert/inference cost on the Pi.
+# MediaPipe landmarks are normalized (0-1) so detection quality is unaffected.
+FRAME_WIDTH = int(os.getenv("FRAME_WIDTH", "640"))
+FRAME_HEIGHT = int(os.getenv("FRAME_HEIGHT", "480"))
+
 # Whether to display the OpenCV preview window.
 # Default to "true" for development; set to "false" in production (e.g. on
 # a Raspberry Pi) to skip all GUI operations and improve performance.
@@ -49,7 +57,7 @@ options = HandLandmarkerOptions(
     base_options=BaseOptions(model_asset_path=MODEL_PATH),
     running_mode=VisionRunningMode.VIDEO,
     num_hands=2,
-    min_hand_detection_confidence=0.7,
+    min_hand_detection_confidence=0.75,
     min_tracking_confidence=0.5,
 )
 
@@ -75,8 +83,8 @@ signal.signal(signal.SIGTERM, _shutdown_handler)
 def main():
     """Entry point: open camera, detect hand gestures, and optionally display a preview."""
     cap = cv2.VideoCapture(CAMERA_INDEX)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, FRAME_WIDTH)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT)
 
     # Check if the Camera is available
     if not cap.isOpened():
@@ -84,7 +92,7 @@ def main():
         return
 
     mode = "preview" if SHOW_PREVIEW else "headless"
-    print(f"Starting camera in {mode} mode...")
+    print(f"Starting camera in {mode} mode ({FRAME_WIDTH}×{FRAME_HEIGHT})...")
 
     if SHOW_PREVIEW:
         print("Controls:  q = quit  |  p = pause/resume terminal output")
@@ -93,6 +101,10 @@ def main():
 
     printing_enabled = True  # Toggle with 'p' (preview mode only).
     last_sign = "NONE"
+
+    # Pre-allocate a reusable buffer for the BGR→RGB conversion.
+    # Avoids a fresh numpy allocation on every single frame (~1.2 MB at 640×480).
+    rgb_buffer = np.empty((FRAME_HEIGHT, FRAME_WIDTH, 3), dtype=np.uint8)
 
     try:
         with HandLandmarker.create_from_options(options) as landmarker:
@@ -105,9 +117,9 @@ def main():
                 # Mirror the image so it feels natural.
                 frame = cv2.flip(frame, 1)
 
-                # Convert BGR -> RGB for MediaPipe.
-                rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
+                # Convert BGR -> RGB for MediaPipe, reusing the pre-allocated buffer.
+                cv2.cvtColor(frame, cv2.COLOR_BGR2RGB, dst=rgb_buffer)
+                mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_buffer)
 
                 timestamp_ms = int(time.monotonic() * 1000)
                 results = landmarker.detect_for_video(mp_image, timestamp_ms)

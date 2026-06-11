@@ -1,4 +1,3 @@
-import math
 import os
 import cv2
 
@@ -66,9 +65,15 @@ LANDMARK_NAMES: list[str] = [
 ]
 
 
-def distance(a, b):
-    """Euclidean distance between two landmarks (using x, y)."""
-    return math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2)
+def distance_sq(a, b):
+    """Squared Euclidean distance between two landmarks (x, y).
+
+    Uses squared distance to avoid the expensive math.sqrt call.
+    Valid for all comparison-based gesture logic since sqrt is monotonic.
+    """
+    dx = a.x - b.x
+    dy = a.y - b.y
+    return dx * dx + dy * dy
 
 
 # ---------------------------------------------------------------------------

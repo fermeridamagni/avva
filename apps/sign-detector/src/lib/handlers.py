@@ -1,8 +1,10 @@
 import json
-import threading
 import os
-from websocket import create_connection
+import queue
+import threading
+
 from dotenv import load_dotenv
+from websocket import create_connection
 
 load_dotenv()  # Load environment variables before importing modules that read them.
 
@@ -11,6 +13,13 @@ WS_SERVER_URL = os.getenv("WS_SERVER_URL")
 # Global variables for persistent connection
 _ws = None
 _ws_lock = threading.Lock()
+
+# ---------------------------------------------------------------------------
+# Queue-based sender — avoids spawning a new thread per gesture event.
+# On Linux/ARM, thread creation costs ~0.5-1 ms each; a persistent worker
+# thread with a bounded queue eliminates that overhead entirely.
+# ---------------------------------------------------------------------------
+_send_queue: queue.Queue[str] = queue.Queue(maxsize=16)
 
 
 def _get_connection():
@@ -52,6 +61,27 @@ def _send_request(sign: str):
                 _ws = None
 
 
+def _send_worker():
+    """Background worker that drains the send queue."""
+    while True:
+        sign = _send_queue.get()
+        if sign is None:
+            break  # Poison pill for clean shutdown.
+        _send_request(sign)
+
+
+# Start a single persistent worker thread (daemon so it dies with the process).
+_worker = threading.Thread(target=_send_worker, daemon=True)
+_worker.start()
+
+
 def send_to_server(sign: str):
-    """Send the detected sign to the server via WebSocket asynchronously."""
-    threading.Thread(target=_send_request, args=(sign,), daemon=True).start()
+    """Queue the detected sign for async WebSocket delivery.
+
+    If the queue is full (16 items), the event is silently dropped
+    because stale gestures are not useful.
+    """
+    try:
+        _send_queue.put_nowait(sign)
+    except queue.Full:
+        pass  # Drop stale gestures — only the latest matters.
