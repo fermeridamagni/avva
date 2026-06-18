@@ -41,7 +41,7 @@ for await (const target of targets) {
     },
   });
 
-  if (target.bunTarget.includes("darwin")) {
+  if (target.bunTarget.includes("darwin") && process.platform === "darwin") {
     const binaryPath = `${outDir}/${binaryName}-${target.tauriTriple}`;
     console.log(`Code signing ${binaryPath}...`);
     const removeSig = Bun.spawnSync([
