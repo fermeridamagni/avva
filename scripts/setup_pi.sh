@@ -3,7 +3,7 @@ set -e
 
 echo "Installing system updates and base dependencies..."
 echo "123" | sudo -S apt-get update
-echo "123" | sudo -S apt-get install -y curl wget git build-essential
+echo "123" | sudo -S apt-get install -y curl wget git build-essential mosquitto mosquitto-clients
 
 echo "Installing Rust..."
 if ! command -v rustc &> /dev/null; then
@@ -35,8 +35,8 @@ cd apps/sign-detector
 uv sync
 cd ../..
 
-echo "Setting up demo-api..."
-cd apps/demo-api
+echo "Setting up gateway-api..."
+cd apps/gateway-api
 bun install
 cd ../..
 

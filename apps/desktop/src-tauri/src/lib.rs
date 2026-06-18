@@ -20,12 +20,70 @@ async fn check_connectivity() -> bool {
     .unwrap_or(false)
 }
 
+use tauri::{Manager, RunEvent};
+use tauri_plugin_shell::ShellExt;
+
+struct Sidecars(std::sync::Mutex<Vec<tauri_plugin_shell::process::CommandChild>>);
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let builder = tauri::Builder::default()
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, Some(vec![])))
         .invoke_handler(tauri::generate_handler![check_connectivity])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .setup(|app| {
+            let mut children = Vec::new();
+            
+            println!("Starting gateway-api sidecar...");
+            if let Ok(cmd) = app.shell().sidecar("gateway-api") {
+                if let Ok((_rcv, child)) = cmd.spawn() {
+                    println!("gateway-api sidecar started with PID {}", child.pid());
+                    children.push(child);
+                } else {
+                    println!("Failed to spawn gateway-api sidecar.");
+                }
+            } else {
+                println!("Failed to resolve gateway-api sidecar.");
+            }
+            
+            println!("Starting sign-detector sidecar...");
+            if let Ok(cmd) = app.shell().sidecar("sign-detector") {
+                if let Ok((_rcv, child)) = cmd.spawn() {
+                    println!("sign-detector sidecar started with PID {}", child.pid());
+                    children.push(child);
+                } else {
+                    println!("Failed to spawn sign-detector sidecar.");
+                }
+            } else {
+                println!("Failed to resolve sign-detector sidecar.");
+            }
+
+            app.manage(Sidecars(std::sync::Mutex::new(children)));
+
+            Ok(())
+        });
+
+    let app = builder
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application");
+
+    app.run(|app_handle, event| {
+        if let RunEvent::Exit = event {
+            println!("Application exiting. Killing sidecars...");
+            if let Some(state) = app_handle.try_state::<Sidecars>() {
+                let mut children = state.0.lock().unwrap();
+                for child in children.drain(..) {
+                    let pid = child.pid();
+                    println!("Killing sidecar with PID {}", pid);
+                    if let Err(e) = child.kill() {
+                        println!("Failed to kill sidecar with PID {}: {}", pid, e);
+                    } else {
+                        println!("Successfully killed sidecar with PID {}", pid);
+                    }
+                }
+            }
+        }
+    });
 }

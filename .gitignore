@@ -48,3 +48,6 @@ hand_landmarker.task
 
 # IDEs and editors
 .antigravitycli
+
+# Tauri Sidecars (compiled binaries)
+apps/desktop/src-tauri/sidecars/

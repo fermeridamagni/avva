@@ -1,9 +1,7 @@
 {
   "compilerOptions": {
-    "types": ["bun", "react", "react-dom"],
+    "types": ["bun", "node"],
     "strict": true,
-    "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx",
 
     "paths": {
       "@/*": ["./src/*"],

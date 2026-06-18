@@ -29,6 +29,7 @@
   "bundle": {
     "active": true,
     "targets": ["app", "dmg", "deb", "appimage", "rpm"],
+    "externalBin": ["sidecars/gateway-api", "sidecars/sign-detector"],
     "icon": [
       "icons/32x32.png",
       "icons/64x64.png",
