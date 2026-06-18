@@ -16,7 +16,14 @@ import lib.utils as utils
 from lib.handlers import send_to_server
 from lib.helpers import detect_one_hand_gesture, detect_two_hand_gesture
 
-load_dotenv()  # Load environment variables before importing modules that read them.
+import sys
+
+# When running as a PyInstaller bundle, .env lives next to the executable;
+# in development it's found via the normal cwd-based search.
+if getattr(sys, "frozen", False):
+    load_dotenv(os.path.join(os.path.dirname(sys.executable), ".env"))
+else:
+    load_dotenv()
 
 # ---------------------------------------------------------------------------
 # Configuration

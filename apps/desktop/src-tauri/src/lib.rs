@@ -38,9 +38,33 @@ pub fn run() {
             
             println!("Starting gateway-api sidecar...");
             if let Ok(cmd) = app.shell().sidecar("gateway-api") {
-                if let Ok((_rcv, child)) = cmd.spawn() {
+                if let Ok((rcv, child)) = cmd.spawn() {
                     println!("gateway-api sidecar started with PID {}", child.pid());
                     children.push(child);
+                    // Forward sidecar stdout/stderr to the terminal.
+                    tauri::async_runtime::spawn(async move {
+                        use tauri_plugin_shell::process::CommandEvent;
+                        let mut rcv = rcv;
+                        while let Some(event) = rcv.recv().await {
+                            match event {
+                                CommandEvent::Stdout(line) => {
+                                    print!("[gateway-api] {}", String::from_utf8_lossy(&line));
+                                }
+                                CommandEvent::Stderr(line) => {
+                                    eprint!("[gateway-api] {}", String::from_utf8_lossy(&line));
+                                }
+                                CommandEvent::Terminated(payload) => {
+                                    println!("[gateway-api] process terminated: {:?}", payload);
+                                    break;
+                                }
+                                CommandEvent::Error(err) => {
+                                    eprintln!("[gateway-api] error: {}", err);
+                                    break;
+                                }
+                                _ => {}
+                            }
+                        }
+                    });
                 } else {
                     println!("Failed to spawn gateway-api sidecar.");
                 }
@@ -50,9 +74,33 @@ pub fn run() {
             
             println!("Starting sign-detector sidecar...");
             if let Ok(cmd) = app.shell().sidecar("sign-detector") {
-                if let Ok((_rcv, child)) = cmd.spawn() {
+                if let Ok((rcv, child)) = cmd.spawn() {
                     println!("sign-detector sidecar started with PID {}", child.pid());
                     children.push(child);
+                    // Forward sidecar stdout/stderr to the terminal.
+                    tauri::async_runtime::spawn(async move {
+                        use tauri_plugin_shell::process::CommandEvent;
+                        let mut rcv = rcv;
+                        while let Some(event) = rcv.recv().await {
+                            match event {
+                                CommandEvent::Stdout(line) => {
+                                    print!("[sign-detector] {}", String::from_utf8_lossy(&line));
+                                }
+                                CommandEvent::Stderr(line) => {
+                                    eprint!("[sign-detector] {}", String::from_utf8_lossy(&line));
+                                }
+                                CommandEvent::Terminated(payload) => {
+                                    println!("[sign-detector] process terminated: {:?}", payload);
+                                    break;
+                                }
+                                CommandEvent::Error(err) => {
+                                    eprintln!("[sign-detector] error: {}", err);
+                                    break;
+                                }
+                                _ => {}
+                            }
+                        }
+                    });
                 } else {
                     println!("Failed to spawn sign-detector sidecar.");
                 }

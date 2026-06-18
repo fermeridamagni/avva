@@ -9,8 +9,17 @@ mqttClient.on("connect", () => {
   customLogger("Connected to MQTT broker at", MQTT_BROKER_URL);
 });
 
+let mqttErrorLogged = false;
+
 mqttClient.on("error", (error) => {
-  customLogger("MQTT connection error:", error.message);
+  if (!mqttErrorLogged) {
+    customLogger(
+      "MQTT connection error:",
+      error.message,
+      "(further MQTT errors will be suppressed)"
+    );
+    mqttErrorLogged = true;
+  }
 });
 
 export const publishToArduino = (

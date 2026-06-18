@@ -4,11 +4,16 @@ version = "0.1.0"
 description = "A sign detector built with Mediapipe and OpenCV."
 requires-python = ">=3.12"
 dependencies = [
-  "opencv-python-headless==4.9.0.80",
+  "opencv-contrib-python-headless>=4.9.0",
   "mediapipe==0.10.18",
   "numpy>=1.26",
   "websocket-client==1.9.0",
   "python-dotenv==1.2.2"
+]
+
+[tool.uv]
+override-dependencies = [
+  "opencv-contrib-python; sys_platform == 'never'",
 ]
 
 [dependency-groups]

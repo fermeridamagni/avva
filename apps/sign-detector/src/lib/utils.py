@@ -188,12 +188,23 @@ def print_coordinates_table(landmarks):
 # Model loading helper
 # ---------------------------------------------------------------------------
 def getModel():
-    # Path to the HandLandmarker model (same folder as this script).
-    MODEL_PATH = os.path.join(
-        os.path.dirname(os.getcwd()),
-        "sign-detector",
-        "hand_landmarker.task",
-    )
+    """Resolve the path to the HandLandmarker model file.
+
+    When running as a PyInstaller-bundled sidecar, the working directory is
+    unpredictable, so we resolve the model path relative to the executable
+    itself.  In development mode (running via ``uv run``), we fall back to
+    the original cwd-based resolution for backwards compatibility.
+    """
+    import sys
+
+    if getattr(sys, "frozen", False):
+        # Running as a PyInstaller bundle — place the model next to the exe.
+        base_dir = os.path.dirname(sys.executable)
+    else:
+        # Running in development — use the original cwd-based path.
+        base_dir = os.path.join(os.path.dirname(os.getcwd()), "sign-detector")
+
+    MODEL_PATH = os.path.join(base_dir, "hand_landmarker.task")
 
     # Download the model if it's missing.
     if not os.path.exists(MODEL_PATH):
@@ -206,3 +217,4 @@ def getModel():
         print("Download complete.")
 
     return MODEL_PATH
+

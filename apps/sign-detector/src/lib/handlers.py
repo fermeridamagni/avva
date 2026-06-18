@@ -1,14 +1,20 @@
 import json
 import os
 import queue
+import sys
 import threading
 
 from dotenv import load_dotenv
 from websocket import create_connection
 
-load_dotenv()  # Load environment variables before importing modules that read them.
+# When running as a PyInstaller bundle, .env lives next to the executable;
+# in development it's found via the normal cwd-based search.
+if getattr(sys, "frozen", False):
+    load_dotenv(os.path.join(os.path.dirname(sys.executable), ".env"))
+else:
+    load_dotenv()
 
-WS_SERVER_URL = os.getenv("WS_SERVER_URL")
+WS_SERVER_URL = os.getenv("WS_SERVER_URL", "ws://localhost:3000/events")
 
 # Global variables for persistent connection
 _ws = None

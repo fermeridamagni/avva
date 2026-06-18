@@ -33,7 +33,13 @@ cd ~/Workspace/avva
 echo "Setting up sign-detector..."
 cd apps/sign-detector
 uv sync
-uv run pyinstaller --onefile --distpath ../desktop/src-tauri/sidecars --name sign-detector-aarch64-unknown-linux-gnu src/main.py
+rm -rf build dist *.spec
+uv run pyinstaller --onefile --clean \
+    --hidden-import cv2 \
+    --hidden-import mediapipe \
+    --distpath ../desktop/src-tauri/sidecars \
+    --name sign-detector-aarch64-unknown-linux-gnu \
+    src/main.py
 cd ../..
 
 echo "Setting up gateway-api..."

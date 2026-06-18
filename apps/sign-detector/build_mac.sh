@@ -4,8 +4,13 @@ set -e
 # Sync dependencies
 uv sync
 
+# Clean previous build artifacts to avoid stale caches
+rm -rf build dist *.spec
+
 # Build with PyInstaller
-uv run pyinstaller --onefile \
+uv run pyinstaller --onefile --clean \
+    --hidden-import cv2 \
+    --hidden-import mediapipe \
     --distpath ../desktop/src-tauri/sidecars \
     --name sign-detector-aarch64-apple-darwin \
     src/main.py
