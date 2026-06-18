@@ -8,16 +8,6 @@ import sys
 # Re-launch with libcamerify if on Linux ARM and not already wrapped.
 # The Pi 5 camera requires libcamera, but OpenCV cv2.VideoCapture(0) tries V4L2.
 # libcamerify intercepts V4L2 calls using LD_PRELOAD.
-if sys.platform == "linux" and os.uname().machine in ("aarch64", "arm64"):
-    ld_preload = os.environ.get("LD_PRELOAD", "")
-    if "v4l2compat.so" not in ld_preload:
-        print("Linux ARM detected without libcamerify. Relaunching with libcamerify...")
-        try:
-            # Re-execute the current process, prefixing with libcamerify
-            os.execvp("libcamerify", ["libcamerify", sys.executable] + sys.argv[1:])
-        except FileNotFoundError:
-            print("WARNING: libcamerify not found in PATH. Camera may fail to open.")
-
 # If running over SSH without a display exported, default to the Pi's primary screen
 if os.name == "posix" and "DISPLAY" not in os.environ:
     os.environ["DISPLAY"] = ":0"
