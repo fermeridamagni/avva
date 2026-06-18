@@ -80,6 +80,9 @@ def _send_worker():
 _worker = threading.Thread(target=_send_worker, daemon=True)
 _worker.start()
 
+# Eagerly establish the connection in the background so we don't wait for the first sign
+threading.Thread(target=_get_connection, daemon=True).start()
+
 
 def send_to_server(sign: str):
     """Queue the detected sign for async WebSocket delivery.
