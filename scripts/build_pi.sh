@@ -16,7 +16,7 @@ uv run pyinstaller --onefile --distpath ../desktop/src-tauri/sidecars --name sig
 
 cd ~/Workspace/avva/apps/desktop
 echo "Building Tauri App..."
-bun run tauri build
+bun run tauri build --bundles deb
 
 echo "Installing the compiled .deb package..."
 DEB_FILE=$(find src-tauri/target/release/bundle/deb -name "*.deb" | head -n 1)

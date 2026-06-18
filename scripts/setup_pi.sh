@@ -47,7 +47,7 @@ cd apps/desktop
 bun install
 
 echo "Building the desktop app..."
-bun run build
+bun run build --bundles deb
 
 echo "Installing the compiled .deb package..."
 DEB_FILE=$(find src-tauri/target/release/bundle/deb -name "*.deb" | head -n 1)
