@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
-const WS_URL = import.meta.env.VITE_GATEWAY_WS_URL || "ws://localhost:3000/events";
+const WS_URL =
+  import.meta.env.VITE_GATEWAY_WS_URL || "ws://localhost:3000/events";
 
 export function useWebSocket() {
   const ws = useRef<WebSocket | null>(null);
@@ -19,7 +20,7 @@ export function useWebSocket() {
       ws.current.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          
+
           if (data.type === "sign" && data.sign) {
             toast("Sign detected!", {
               description: `Sign: ${data.sign}`,
