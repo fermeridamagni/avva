@@ -29,6 +29,7 @@ build
 dist
 .generated/
 *.spec
+*.bun-build
 
 # Debug
 npm-debug.log*
