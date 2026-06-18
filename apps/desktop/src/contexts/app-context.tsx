@@ -2,6 +2,7 @@ import ScreenSaver from "@components/screen-saver";
 import StatusBar from "@components/status-bar";
 import { TabProvider } from "@components/tab-provider";
 import { CalendarProvider } from "@contexts/calendar-context";
+import { useWebSocket } from "@hooks/use-websocket";
 import { invoke } from "@tauri-apps/api/core";
 import { type Platform, platform } from "@tauri-apps/plugin-os";
 import { AnimatePresence } from "motion/react";
@@ -75,6 +76,8 @@ export function AppProvider() {
   const [user, setUser] = useState<User>(DEFAULT_USER);
   const [currentTab, setCurrentTab] = useState<Tab>(tabs[0]);
   const [swipeDirection, setSwipeDirection] = useState<1 | -1>(1);
+
+  useWebSocket();
 
   // React to browser online/offline events for instant UI updates
   useEffect(() => {
