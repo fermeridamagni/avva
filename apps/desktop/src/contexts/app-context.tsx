@@ -5,6 +5,7 @@ import { CalendarProvider } from "@contexts/calendar-context";
 import { useWebSocket } from "@hooks/use-websocket";
 import { invoke } from "@tauri-apps/api/core";
 import { type Platform, platform } from "@tauri-apps/plugin-os";
+import { Toaster } from "@ui/sonner";
 import { AnimatePresence } from "motion/react";
 import { createContext, useContext, useEffect, useState } from "react";
 
@@ -217,6 +218,7 @@ export function AppProvider() {
               </>
             )}
           </AnimatePresence>
+          <Toaster />
         </main>
       </CalendarProvider>
     </AppContext.Provider>
