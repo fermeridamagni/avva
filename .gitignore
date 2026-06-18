@@ -28,6 +28,7 @@ out/
 build
 dist
 .generated/
+*.spec
 
 # Debug
 npm-debug.log*
