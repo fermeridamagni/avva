@@ -3,6 +3,7 @@ import { tabs, useAppContext } from "@contexts/app-context";
 import { useSwipeGesture } from "@hooks/use-swipe-gesture";
 import CalendarTab from "@tabs/calendar";
 import HomeTab from "@tabs/home";
+import InterpreterTab from "@tabs/interpreter";
 import SettingsTab from "@tabs/settings";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useMemo } from "react";
@@ -118,6 +119,8 @@ const CurrentTabComponent = ({ currentTab }: { currentTab: Tab }) => {
       return <HomeTab />;
     case "calendar":
       return <CalendarTab />;
+    case "interpreter":
+      return <InterpreterTab />;
     case "settings":
       return <SettingsTab />;
     default:

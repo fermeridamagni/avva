@@ -111,6 +111,41 @@ pub fn run() {
                 println!("Failed to resolve sign-detector sidecar.");
             }
 
+            println!("Starting stt-service sidecar...");
+            if let Ok(cmd) = app.shell().sidecar("stt-service") {
+                if let Ok((rcv, child)) = cmd.spawn() {
+                    println!("stt-service sidecar started with PID {}", child.pid());
+                    children.push(child);
+                    tauri::async_runtime::spawn(async move {
+                        use tauri_plugin_shell::process::CommandEvent;
+                        let mut rcv = rcv;
+                        while let Some(event) = rcv.recv().await {
+                            match event {
+                                CommandEvent::Stdout(line) => {
+                                    print!("[stt-service] {}", String::from_utf8_lossy(&line));
+                                }
+                                CommandEvent::Stderr(line) => {
+                                    eprint!("[stt-service] {}", String::from_utf8_lossy(&line));
+                                }
+                                CommandEvent::Terminated(payload) => {
+                                    println!("[stt-service] process terminated: {:?}", payload);
+                                    break;
+                                }
+                                CommandEvent::Error(err) => {
+                                    eprintln!("[stt-service] error: {}", err);
+                                    break;
+                                }
+                                _ => {}
+                            }
+                        }
+                    });
+                } else {
+                    println!("Failed to spawn stt-service sidecar.");
+                }
+            } else {
+                println!("Failed to resolve stt-service sidecar.");
+            }
+
             app.manage(Sidecars(std::sync::Mutex::new(children)));
 
             Ok(())

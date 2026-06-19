@@ -20,6 +20,15 @@ uv run pyinstaller --onefile --clean \
     --name sign-detector-aarch64-unknown-linux-gnu \
     src/main.py
 
+echo "Building stt-service sidecar..."
+cd ~/Workspace/avva/apps/stt-service
+uv sync
+rm -rf build dist *.spec
+uv run pyinstaller --onefile --clean \
+    --distpath ../desktop/src-tauri/sidecars \
+    --name stt-service-aarch64-unknown-linux-gnu \
+    src/main.py
+
 cd ~/Workspace/avva/apps/desktop
 echo "Building Tauri App..."
 bun run tauri build --bundles deb

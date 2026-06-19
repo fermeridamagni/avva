@@ -35,6 +35,10 @@ export const tabs: Tab[] = [
     title: "Calendario",
   },
   {
+    id: "interpreter",
+    title: "Intérprete",
+  },
+  {
     id: "settings",
     title: "Ajustes",
   },
