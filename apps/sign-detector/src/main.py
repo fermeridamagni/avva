@@ -94,7 +94,7 @@ signal.signal(signal.SIGTERM, _shutdown_handler)
 # ---------------------------------------------------------------------------
 def main():
     """Entry point: open camera, detect hand gestures, and optionally display a preview."""
-    cap = cv2.VideoCapture(CAMERA_INDEX)
+    cap = cv2.VideoCapture(CAMERA_INDEX, cv2.CAP_V4L2)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, FRAME_WIDTH)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT)
 
@@ -113,6 +113,7 @@ def main():
 
     printing_enabled = True  # Toggle with 'p' (preview mode only).
     last_sign = "NONE"
+    preview_supported = True
 
     # Pre-allocate a reusable buffer for the BGR→RGB conversion.
     # Avoids a fresh numpy allocation on every single frame (~1.2 MB at 640×480).
@@ -120,11 +121,17 @@ def main():
 
     try:
         with HandLandmarker.create_from_options(options) as landmarker:
+            failed_frames = 0
             while _running:
                 ret, frame = cap.read()
                 if not ret:
-                    print("ERROR: Could not read frame. Is the camera in use?")
-                    break
+                    failed_frames += 1
+                    if failed_frames > 30:
+                        print("ERROR: Could not read frame after multiple attempts. Is the camera in use?")
+                        break
+                    time.sleep(0.1)
+                    continue
+                failed_frames = 0
 
                 # Mirror the image so it feels natural.
                 frame = cv2.flip(frame, 1)
@@ -183,16 +190,19 @@ def main():
                         cv2.LINE_AA,
                     )
 
-                if SHOW_PREVIEW:
-                    cv2.imshow("Hand Landmarks Debug", frame)
-
-                    key = cv2.waitKey(5) & 0xFF
-                    if key == ord("q"):
-                        break
-                    elif key == ord("p"):
-                        printing_enabled = not printing_enabled
-                        state = "ON" if printing_enabled else "OFF"
-                        print(f"[Terminal output {state}]")
+                if SHOW_PREVIEW and preview_supported:
+                    try:
+                        cv2.imshow("Hand Landmarks Debug", frame)
+                        key = cv2.waitKey(5) & 0xFF
+                        if key == ord("q"):
+                            break
+                        elif key == ord("p"):
+                            printing_enabled = not printing_enabled
+                            state = "ON" if printing_enabled else "OFF"
+                            print(f"[Terminal output {state}]")
+                    except cv2.error:
+                        print("WARNING: OpenCV UI not supported (using opencv-python-headless). Switching to headless mode.")
+                        preview_supported = False
                 else:
                     # Small sleep to avoid busy-spinning in headless mode.
                     time.sleep(0.005)
@@ -200,7 +210,10 @@ def main():
     finally:
         cap.release()
         if SHOW_PREVIEW:
-            cv2.destroyAllWindows()
+            try:
+                cv2.destroyAllWindows()
+            except cv2.error:
+                pass
         print("Camera released. Goodbye.")
 
 
