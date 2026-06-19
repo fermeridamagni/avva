@@ -124,8 +124,16 @@ def main():
         print("Running headless — send SIGINT (Ctrl+C) or SIGTERM to stop.")
 
     printing_enabled = True  # Toggle with 'p' (preview mode only).
-    last_sign = "NONE"
     preview_supported = True
+
+    # Debouncing configuration
+    FRAMES_REQUIRED = int(os.getenv("DEBOUNCE_FRAMES", "10"))
+    COOLDOWN_TIME = float(os.getenv("COOLDOWN_TIME", "1.5"))  # seconds
+
+    candidate_sign = "NONE"
+    consecutive_frames = 0
+    last_sent_time = 0.0
+    has_fired = False
 
     # Pre-allocate a reusable buffer for the BGR→RGB conversion.
     # Avoids a fresh numpy allocation on every single frame (~1.2 MB at 640×480).
@@ -180,9 +188,24 @@ def main():
                     elif one_hand_gesture:
                         current_sign, label, color = one_hand_gesture
 
-                    if current_sign != last_sign and current_sign != "NONE":
-                        send_to_server(current_sign)
-                    last_sign = current_sign
+                    current_time = time.monotonic()
+
+                    if current_sign != "NONE":
+                        if current_sign == candidate_sign:
+                            consecutive_frames += 1
+                            if consecutive_frames >= FRAMES_REQUIRED and not has_fired:
+                                if current_time - last_sent_time > COOLDOWN_TIME:
+                                    send_to_server(current_sign)
+                                    last_sent_time = current_time
+                                    has_fired = True
+                        else:
+                            candidate_sign = current_sign
+                            consecutive_frames = 1
+                            has_fired = False
+                    else:
+                        candidate_sign = "NONE"
+                        consecutive_frames = 0
+                        has_fired = False
 
                     if SHOW_PREVIEW:
                         cv2.putText(
