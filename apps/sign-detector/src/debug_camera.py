@@ -85,6 +85,17 @@ with HandLandmarker.create_from_options(options) as landmarker:
 
         frames_read += 1
         actual_shape = frame.shape
+
+        # Reshape flat buffer from libcamerify V4L2 compat layer
+        if frame.ndim != 3 or frame.shape[0] != FRAME_HEIGHT or frame.shape[1] != FRAME_WIDTH:
+            try:
+                frame = frame.reshape((FRAME_HEIGHT, FRAME_WIDTH, 3))
+                if i == 7:  # Log once after the first few failed frames
+                    print(f"  NOTE: Reshaped flat buffer {actual_shape} -> {frame.shape}")
+            except ValueError:
+                print(f"  Frame {i}: Cannot reshape {actual_shape} to ({FRAME_HEIGHT}, {FRAME_WIDTH}, 3)")
+                continue
+
         frame = cv2.flip(frame, 1)
 
         # Resize if needed to match buffer
