@@ -49,40 +49,74 @@ async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     print("Client connected for STT.", file=sys.stderr)
     
-    # Accumulate audio data. Whisper performs best with 1-3 seconds minimum.
-    audio_buffer = np.array([], dtype=np.float32)
-    chunk_size = int(16000 * 1.5)  # 1.5 seconds
+    import sounddevice as sd
+    
+    loop = asyncio.get_running_loop()
+    audio_queue = asyncio.Queue()
+    is_recording = False
+    
+    def audio_callback(indata, frames, time_info, status):
+        if status:
+            print(status, file=sys.stderr)
+        if is_recording:
+            # Flatten to 1D float32 array
+            loop.call_soon_threadsafe(audio_queue.put_nowait, indata[:, 0].copy())
 
-    try:
+    async def transcribe_worker():
+        audio_buffer = np.array([], dtype=np.float32)
+        chunk_size = int(16000 * 1.5)  # 1.5 seconds
+
         while True:
-            # We expect audio data as raw 16kHz, 16-bit, mono PCM bytes
-            data = await websocket.receive_bytes()
-            
-            # Convert raw bytes to numpy array
-            chunk = np.frombuffer(data, dtype=np.int16).astype(np.float32) / 32768.0
+            chunk = await audio_queue.get()
             audio_buffer = np.concatenate((audio_buffer, chunk))
             
             if len(audio_buffer) >= chunk_size:
-                # Transcribe the audio chunk
                 segments = await asyncio.to_thread(model.transcribe, audio_buffer)
                 
                 text = " ".join([segment.text for segment in segments]).strip()
-                
-                # Remove any tags like [Música], [BLANK_AUDIO], etc.
                 text = re.sub(r'\[.*?\]', '', text).strip()
                 
-                # If there's still text left after stripping tags
                 if text:
                     await websocket.send_json({"text": text})
                 
-                # Keep a small overlap for the next transcription context (0.5 seconds)
                 overlap = int(16000 * 0.5)
                 audio_buffer = audio_buffer[-overlap:]
+
+    worker_task = None
+    stream = None
+
+    try:
+        while True:
+            data = await websocket.receive_json()
+            action = data.get("action")
+            
+            if action == "start":
+                if not is_recording:
+                    is_recording = True
+                    worker_task = asyncio.create_task(transcribe_worker())
+                    stream = sd.InputStream(samplerate=16000, channels=1, dtype='float32', callback=audio_callback)
+                    stream.start()
+            elif action == "stop":
+                is_recording = False
+                if stream:
+                    stream.stop()
+                    stream.close()
+                    stream = None
+                if worker_task:
+                    worker_task.cancel()
+                    worker_task = None
                 
     except WebSocketDisconnect:
         print("Client disconnected.", file=sys.stderr)
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
+    finally:
+        is_recording = False
+        if stream:
+            stream.stop()
+            stream.close()
+        if worker_task:
+            worker_task.cancel()
         try:
             await websocket.close()
         except Exception:

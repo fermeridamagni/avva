@@ -10,48 +10,14 @@ export default function InterpreterTab() {
   const streamRef = useRef<MediaStream | null>(null);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
 
-  const startRecording = async () => {
+  const startRecording = () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          channelCount: 1,
-          sampleRate: 16_000, // Request 16kHz if possible
-        },
-      });
-      streamRef.current = stream;
-
       const ws = new WebSocket("ws://localhost:8000/ws/transcribe");
       wsRef.current = ws;
 
       ws.onopen = () => {
         setIsRecording(true);
-        // Start processing audio
-        const audioContext = new (
-          window.AudioContext || (window as any).webkitAudioContext
-        )({
-          sampleRate: 16_000,
-        });
-        audioContextRef.current = audioContext;
-
-        const source = audioContext.createMediaStreamSource(stream);
-        const processor = audioContext.createScriptProcessor(4096, 1, 1);
-        processorRef.current = processor;
-
-        source.connect(processor);
-        processor.connect(audioContext.destination); // Required for processor to work
-
-        processor.onaudioprocess = (e) => {
-          if (ws.readyState === WebSocket.OPEN) {
-            const inputData = e.inputBuffer.getChannelData(0);
-            // Convert Float32Array (-1.0 to 1.0) to Int16Array (-32768 to 32767)
-            const pcm16 = new Int16Array(inputData.length);
-            for (let i = 0; i < inputData.length; i++) {
-              const s = Math.max(-1, Math.min(1, inputData[i]));
-              pcm16[i] = s < 0 ? s * 0x80_00 : s * 0x7f_ff;
-            }
-            ws.send(pcm16.buffer);
-          }
-        };
+        ws.send(JSON.stringify({ action: "start" }));
       };
 
       ws.onmessage = (event) => {
@@ -70,24 +36,16 @@ export default function InterpreterTab() {
         stopRecording();
       };
     } catch (err) {
-      console.error("Error accessing microphone:", err);
+      console.error("Error setting up WebSocket:", err);
     }
   };
 
   const stopRecording = () => {
-    if (processorRef.current) {
-      processorRef.current.disconnect();
-      processorRef.current = null;
-    }
-    if (audioContextRef.current) {
-      audioContextRef.current.close();
-      audioContextRef.current = null;
-    }
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    }
     if (wsRef.current) {
+      // Send stop action if open
+      if (wsRef.current.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({ action: "stop" }));
+      }
       wsRef.current.close();
       wsRef.current = null;
     }
