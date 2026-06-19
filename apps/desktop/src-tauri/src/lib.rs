@@ -73,7 +73,10 @@ pub fn run() {
             }
             
             println!("Starting sign-detector sidecar...");
-            if let Ok(cmd) = app.shell().sidecar("sign-detector") {
+            if let Ok(mut cmd) = app.shell().sidecar("sign-detector") {
+                if cfg!(target_arch = "aarch64") && cfg!(target_os = "linux") {
+                    cmd = cmd.env("LD_PRELOAD", "/usr/libexec/aarch64-linux-gnu/libcamera/v4l2-compat.so");
+                }
                 if let Ok((rcv, child)) = cmd.spawn() {
                     println!("sign-detector sidecar started with PID {}", child.pid());
                     children.push(child);

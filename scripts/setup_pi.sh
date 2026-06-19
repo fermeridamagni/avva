@@ -38,16 +38,8 @@ uv run pyinstaller --onefile --clean \
     --hidden-import cv2 \
     --hidden-import mediapipe \
     --distpath ../desktop/src-tauri/sidecars \
-    --name sign-detector-aarch64-unknown-linux-gnu-bin \
+    --name sign-detector-aarch64-unknown-linux-gnu \
     src/main.py
-
-echo "Creating wrapper script for libcamerify..."
-cat << 'EOF' > ../desktop/src-tauri/sidecars/sign-detector-aarch64-unknown-linux-gnu
-#!/bin/bash
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-exec libcamerify "$DIR/sign-detector-aarch64-unknown-linux-gnu-bin" "$@"
-EOF
-chmod +x ../desktop/src-tauri/sidecars/sign-detector-aarch64-unknown-linux-gnu
 
 cd ../..
 
