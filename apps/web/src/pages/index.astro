@@ -1,0 +1,108 @@
+---
+import "../styles/global.css";
+---
+
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width" />
+  <meta name="generator" content={Astro.generator} />
+  <title>AVVA - Empowering Communication</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-[#0A0A0B] text-white min-h-screen selection:bg-blue-500/30">
+  
+  <header class="fixed w-full top-0 z-50 border-b border-white/5 bg-[#0A0A0B]/80 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-lg">A</div>
+        <span class="font-semibold text-lg tracking-tight">AVVA</span>
+      </div>
+      <nav class="flex items-center gap-6 text-sm font-medium text-gray-400">
+        <a href="/spec/architecture" class="hover:text-white transition-colors">Documentation</a>
+        <a href="https://github.com" class="hover:text-white transition-colors">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="relative pt-32 pb-16 px-6">
+    <!-- Background glow -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/20 rounded-full blur-[120px] -z-10 opacity-50"></div>
+    
+    <div class="max-w-4xl mx-auto text-center mt-20">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm mb-8">
+        <span class="flex h-2 w-2 rounded-full bg-blue-500"></span>
+        AI-Powered Assistant
+      </div>
+      
+      <h1 class="text-5xl md:text-7xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60 mb-8">
+        Bridging the gap for <br/> Deaf-Mute communication
+      </h1>
+      
+      <p class="text-lg md:text-xl text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed">
+        A seamless hardware and software ecosystem. Harnessing the power of AI on Raspberry Pi to translate sign language in real-time.
+      </p>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="/spec/architecture" class="h-12 px-8 rounded-full bg-white text-black font-medium flex items-center justify-center hover:bg-gray-100 transition-colors">
+          View Architecture
+        </a>
+        <a href="/spec/hardware" class="h-12 px-8 rounded-full bg-white/5 border border-white/10 text-white font-medium flex items-center justify-center hover:bg-white/10 transition-colors">
+          Hardware Setup
+        </a>
+      </div>
+    </div>
+
+    <!-- Features Grid -->
+    <div class="max-w-7xl mx-auto mt-40 grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Card 1 -->
+      <div class="p-8 rounded-3xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors">
+        <div class="w-12 h-12 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center mb-6">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold mb-3">Sign Detector</h3>
+        <p class="text-gray-400 leading-relaxed text-sm">
+          Powered by MediaPipe and Arducam IMX415 on a Raspberry Pi 5. Detects and translates sign language with incredible precision.
+        </p>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="p-8 rounded-3xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors">
+        <div class="w-12 h-12 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center mb-6">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold mb-3">Desktop Hub</h3>
+        <p class="text-gray-400 leading-relaxed text-sm">
+          Cross-platform Tauri application built with React and TypeScript. Acts as the primary user interface and control center.
+        </p>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="p-8 rounded-3xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors">
+        <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-6">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold mb-3">Gateway API</h3>
+        <p class="text-gray-400 leading-relaxed text-sm">
+          A robust Hono API handling device connectivity, speech-to-text integration, and real-time smart home bridging.
+        </p>
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>
