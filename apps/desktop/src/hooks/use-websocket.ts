@@ -22,8 +22,21 @@ export function useWebSocket() {
           const data = JSON.parse(event.data);
 
           if (data.type === "sign" && data.sign) {
-            toast("Sign detected!", {
-              description: `Sign: ${data.sign}`,
+            let signName = data.sign;
+            // Map known signs to user-friendly names
+            const signMap: Record<string, string> = {
+              TOGGLE_LIGHT: "Luz",
+              TOGGLE_FAN_1: "Ventilador 1",
+              TOGGLE_FAN_2: "Ventilador 2",
+              TOGGLE_TV: "TV",
+            };
+
+            if (signMap[signName]) {
+              signName = signMap[signName];
+            }
+
+            toast.info("Comando detectado!", {
+              description: `Cambiando estado de ${signName},`,
             });
           }
         } catch (err) {
