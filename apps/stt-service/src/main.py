@@ -62,19 +62,21 @@ async def websocket_endpoint(websocket: WebSocket):
             break
             
     print(f"\n--- Audio Devices ---", file=sys.stderr)
-    print(devices, file=sys.stderr)
     print(f"Selected USB input device: {device_id} at {native_samplerate}Hz", file=sys.stderr)
     print("---------------------\n", file=sys.stderr)
     
-    loop = asyncio.get_running_loop()
+    # Global state for audio
     audio_queue = asyncio.Queue()
-    is_recording = False
+    active_clients = set()
     
+    # Needs to be called after event loop is running
+    # but we can grab the loop inside the callback dynamically, 
+    # or just use a global loop variable set on startup.
+    global_loop = None
+
     def audio_callback(indata, frames, time_info, status):
-        if status:
-            print(f"Audio status: {status}", file=sys.stderr)
-        if is_recording:
-            loop.call_soon_threadsafe(audio_queue.put_nowait, indata[:, 0].copy())
+        if len(active_clients) > 0 and global_loop is not None:
+            global_loop.call_soon_threadsafe(audio_queue.put_nowait, indata[:, 0].copy())
 
     async def transcribe_worker():
         audio_buffer = np.array([], dtype=np.float32)
@@ -83,7 +85,11 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             chunk = await audio_queue.get()
             
-            # Resample dynamically if hardware does not support 16kHz natively
+            # If no clients, clear buffer and ignore
+            if len(active_clients) == 0:
+                audio_buffer = np.array([], dtype=np.float32)
+                continue
+                
             if native_samplerate != 16000:
                 duration = len(chunk) / native_samplerate
                 target_len = int(duration * 16000)
@@ -103,13 +109,34 @@ async def websocket_endpoint(websocket: WebSocket):
                 text = re.sub(r'\[.*?\]', '', text).strip()
                 
                 if text:
-                    await websocket.send_json({"text": text})
+                    for ws in list(active_clients):
+                        try:
+                            await ws.send_json({"text": text})
+                        except Exception:
+                            pass
                 
                 overlap = int(16000 * 0.5)
                 audio_buffer = audio_buffer[-overlap:]
 
-    worker_task = None
-    stream = None
+    # Start the background stream and worker immediately
+    # We use a lifespan hook to set this up safely
+@app.on_event("startup")
+async def startup_event():
+    global global_loop
+    global_loop = asyncio.get_running_loop()
+    asyncio.create_task(transcribe_worker())
+    
+    # We open the stream globally so it never gets locked/unlocked
+    global_stream = sd.InputStream(device=device_id, samplerate=native_samplerate, channels=1, dtype='float32', callback=audio_callback)
+    global_stream.start()
+    # keep a reference to prevent garbage collection
+    app.state.global_stream = global_stream
+    print("Global audio stream started.", file=sys.stderr)
+
+@app.websocket("/ws/transcribe")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    print(f"Client connected for STT.", file=sys.stderr)
 
     try:
         while True:
@@ -117,32 +144,16 @@ async def websocket_endpoint(websocket: WebSocket):
             action = data.get("action")
             
             if action == "start":
-                if not is_recording:
-                    is_recording = True
-                    worker_task = asyncio.create_task(transcribe_worker())
-                    stream = sd.InputStream(device=device_id, samplerate=native_samplerate, channels=1, dtype='float32', callback=audio_callback)
-                    stream.start()
+                active_clients.add(websocket)
             elif action == "stop":
-                is_recording = False
-                if stream:
-                    stream.stop()
-                    stream.close()
-                    stream = None
-                if worker_task:
-                    worker_task.cancel()
-                    worker_task = None
+                active_clients.discard(websocket)
                 
     except WebSocketDisconnect:
         print("Client disconnected.", file=sys.stderr)
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
     finally:
-        is_recording = False
-        if stream:
-            stream.stop()
-            stream.close()
-        if worker_task:
-            worker_task.cancel()
+        active_clients.discard(websocket)
         try:
             await websocket.close()
         except Exception:
