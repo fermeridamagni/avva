@@ -51,10 +51,17 @@ async def websocket_endpoint(websocket: WebSocket):
     
     import sounddevice as sd
     
-    # Debug: print available devices
-    print("\n--- Audio Devices ---", file=sys.stderr)
-    print(sd.query_devices(), file=sys.stderr)
-    print(f"Default input device: {sd.default.device[0]}", file=sys.stderr)
+    # Find the USB microphone device dynamically
+    device_id = None
+    devices = sd.query_devices()
+    for i, dev in enumerate(devices):
+        if "USB" in dev['name'] and dev['max_input_channels'] > 0:
+            device_id = i
+            break
+            
+    print(f"\n--- Audio Devices ---", file=sys.stderr)
+    print(devices, file=sys.stderr)
+    print(f"Selected USB input device: {device_id}", file=sys.stderr)
     print("---------------------\n", file=sys.stderr)
     
     loop = asyncio.get_running_loop()
@@ -102,7 +109,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 if not is_recording:
                     is_recording = True
                     worker_task = asyncio.create_task(transcribe_worker())
-                    stream = sd.InputStream(samplerate=16000, channels=1, dtype='float32', callback=audio_callback)
+                    stream = sd.InputStream(device=device_id, samplerate=16000, channels=1, dtype='float32', callback=audio_callback)
                     stream.start()
             elif action == "stop":
                 is_recording = False
