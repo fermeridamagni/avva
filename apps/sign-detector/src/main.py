@@ -106,8 +106,17 @@ def main():
         print("ERROR: Could not open camera. Check CAMERA_INDEX.")
         return
 
+    # Query the actual resolution the camera is delivering, which may differ
+    # from the requested one (e.g. the ISP may round to a supported size).
+    actual_w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    actual_h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    if actual_w != FRAME_WIDTH or actual_h != FRAME_HEIGHT:
+        print(f"NOTE: Camera delivering {actual_w}×{actual_h} (requested {FRAME_WIDTH}×{FRAME_HEIGHT})")
+    frame_w = actual_w or FRAME_WIDTH
+    frame_h = actual_h or FRAME_HEIGHT
+
     mode = "preview" if SHOW_PREVIEW else "headless"
-    print(f"Starting camera in {mode} mode ({FRAME_WIDTH}×{FRAME_HEIGHT})...")
+    print(f"Starting camera in {mode} mode ({frame_w}×{frame_h})...")
 
     if SHOW_PREVIEW:
         print("Controls:  q = quit  |  p = pause/resume terminal output")
@@ -120,7 +129,7 @@ def main():
 
     # Pre-allocate a reusable buffer for the BGR→RGB conversion.
     # Avoids a fresh numpy allocation on every single frame (~1.2 MB at 640×480).
-    rgb_buffer = np.empty((FRAME_HEIGHT, FRAME_WIDTH, 3), dtype=np.uint8)
+    rgb_buffer = np.empty((frame_h, frame_w, 3), dtype=np.uint8)
 
     try:
         with HandLandmarker.create_from_options(options) as landmarker:
@@ -135,6 +144,17 @@ def main():
                     time.sleep(0.1)
                     continue
                 failed_frames = 0
+
+                # libcamerify's V4L2 compat layer on Raspberry Pi delivers
+                # frames as a flat (1, N) buffer instead of (H, W, 3).
+                # Reshape when this happens so OpenCV and MediaPipe can
+                # process the image correctly.
+                if frame.ndim != 3 or frame.shape[0] != frame_h or frame.shape[1] != frame_w:
+                    try:
+                        frame = frame.reshape((frame_h, frame_w, 3))
+                    except ValueError:
+                        # Frame size doesn't match expected dimensions
+                        continue
 
                 # Mirror the image so it feels natural.
                 frame = cv2.flip(frame, 1)
