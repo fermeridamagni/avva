@@ -53,15 +53,17 @@ async def websocket_endpoint(websocket: WebSocket):
     
     # Find the USB microphone device dynamically
     device_id = None
+    native_samplerate = 16000
     devices = sd.query_devices()
     for i, dev in enumerate(devices):
         if "USB" in dev['name'] and dev['max_input_channels'] > 0:
             device_id = i
+            native_samplerate = int(dev['default_samplerate'])
             break
             
     print(f"\n--- Audio Devices ---", file=sys.stderr)
     print(devices, file=sys.stderr)
-    print(f"Selected USB input device: {device_id}", file=sys.stderr)
+    print(f"Selected USB input device: {device_id} at {native_samplerate}Hz", file=sys.stderr)
     print("---------------------\n", file=sys.stderr)
     
     loop = asyncio.get_running_loop()
@@ -80,6 +82,15 @@ async def websocket_endpoint(websocket: WebSocket):
 
         while True:
             chunk = await audio_queue.get()
+            
+            # Resample dynamically if hardware does not support 16kHz natively
+            if native_samplerate != 16000:
+                duration = len(chunk) / native_samplerate
+                target_len = int(duration * 16000)
+                x_old = np.linspace(0, duration, len(chunk))
+                x_new = np.linspace(0, duration, target_len)
+                chunk = np.interp(x_new, x_old, chunk).astype(np.float32)
+                
             audio_buffer = np.concatenate((audio_buffer, chunk))
             
             if len(audio_buffer) >= chunk_size:
@@ -109,7 +120,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 if not is_recording:
                     is_recording = True
                     worker_task = asyncio.create_task(transcribe_worker())
-                    stream = sd.InputStream(device=device_id, samplerate=16000, channels=1, dtype='float32', callback=audio_callback)
+                    stream = sd.InputStream(device=device_id, samplerate=native_samplerate, channels=1, dtype='float32', callback=audio_callback)
                     stream.start()
             elif action == "stop":
                 is_recording = False
