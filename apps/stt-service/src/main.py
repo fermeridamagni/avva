@@ -51,15 +51,20 @@ async def websocket_endpoint(websocket: WebSocket):
     
     import sounddevice as sd
     
+    # Debug: print available devices
+    print("\n--- Audio Devices ---", file=sys.stderr)
+    print(sd.query_devices(), file=sys.stderr)
+    print(f"Default input device: {sd.default.device[0]}", file=sys.stderr)
+    print("---------------------\n", file=sys.stderr)
+    
     loop = asyncio.get_running_loop()
     audio_queue = asyncio.Queue()
     is_recording = False
     
     def audio_callback(indata, frames, time_info, status):
         if status:
-            print(status, file=sys.stderr)
+            print(f"Audio status: {status}", file=sys.stderr)
         if is_recording:
-            # Flatten to 1D float32 array
             loop.call_soon_threadsafe(audio_queue.put_nowait, indata[:, 0].copy())
 
     async def transcribe_worker():
@@ -71,6 +76,9 @@ async def websocket_endpoint(websocket: WebSocket):
             audio_buffer = np.concatenate((audio_buffer, chunk))
             
             if len(audio_buffer) >= chunk_size:
+                vol = np.max(np.abs(audio_buffer))
+                print(f"[STT] Transcribing 1.5s chunk... Max volume: {vol:.4f}", file=sys.stderr)
+                
                 segments = await asyncio.to_thread(model.transcribe, audio_buffer)
                 
                 text = " ".join([segment.text for segment in segments]).strip()
