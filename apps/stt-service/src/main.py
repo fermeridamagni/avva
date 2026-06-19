@@ -26,7 +26,7 @@ threading.Thread(target=watchdog, daemon=True).start()
 
 # Load the whisper model (will download if not present)
 print("Loading Whisper model...", file=sys.stderr)
-model = Model("small", n_threads=4, print_realtime=False, print_progress=False, language="es")
+model = Model("base", n_threads=4, print_realtime=False, print_progress=False, language="es")
 print("Whisper model loaded.", file=sys.stderr)
 
 app = FastAPI(title="STT Service")
@@ -100,11 +100,14 @@ async def transcribe_worker():
             text = re.sub(r'\[.*?\]', '', text).strip()
             
             if text:
+                print(f"[STT] Transcrito: {text}", file=sys.stderr)
                 for ws in list(active_clients):
                     try:
                         await ws.send_json({"text": text})
                     except Exception:
                         pass
+            else:
+                print("[STT] (Silencio o ruido ignorado)", file=sys.stderr)
             
             overlap = int(16000 * 0.5)
             audio_buffer = audio_buffer[-overlap:]
