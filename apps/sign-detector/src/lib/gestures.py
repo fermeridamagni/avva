@@ -62,6 +62,16 @@ def is_index_open(states: dict[str, bool]) -> bool:
     )
 
 
+def is_index_and_middle_open(states: dict[str, bool]) -> bool:
+    """Return True if only the index and middle fingers are extended."""
+    return (
+        states["index"]
+        and states["middle"]
+        and not states["ring"]
+        and not states["pinky"]
+    )
+
+
 def is_middle_open(states: dict[str, bool]) -> bool:
     """Return True if only the middle finger is extended."""
     return (
