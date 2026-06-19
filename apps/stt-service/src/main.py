@@ -44,82 +44,71 @@ app.add_middleware(
 def read_root():
     return {"status": "STT Service is running"}
 
-@app.websocket("/ws/transcribe")
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    print("Client connected for STT.", file=sys.stderr)
-    
-    import sounddevice as sd
-    
-    # Find the USB microphone device dynamically
-    device_id = None
-    native_samplerate = 16000
-    devices = sd.query_devices()
-    for i, dev in enumerate(devices):
-        if "USB" in dev['name'] and dev['max_input_channels'] > 0:
-            device_id = i
-            native_samplerate = int(dev['default_samplerate'])
-            break
+import sounddevice as sd
+
+# Find the USB microphone device dynamically
+device_id = None
+native_samplerate = 16000
+devices = sd.query_devices()
+for i, dev in enumerate(devices):
+    if "USB" in dev['name'] and dev['max_input_channels'] > 0:
+        device_id = i
+        native_samplerate = int(dev['default_samplerate'])
+        break
+        
+print(f"\n--- Audio Devices ---", file=sys.stderr)
+print(f"Selected USB input device: {device_id} at {native_samplerate}Hz", file=sys.stderr)
+print("---------------------\n", file=sys.stderr)
+
+# Global state for audio
+audio_queue = asyncio.Queue()
+active_clients = set()
+global_loop = None
+
+def audio_callback(indata, frames, time_info, status):
+    if len(active_clients) > 0 and global_loop is not None:
+        global_loop.call_soon_threadsafe(audio_queue.put_nowait, indata[:, 0].copy())
+
+async def transcribe_worker():
+    audio_buffer = np.array([], dtype=np.float32)
+    chunk_size = int(16000 * 1.5)  # 1.5 seconds
+
+    while True:
+        chunk = await audio_queue.get()
+        
+        # If no clients, clear buffer and ignore
+        if len(active_clients) == 0:
+            audio_buffer = np.array([], dtype=np.float32)
+            continue
             
-    print(f"\n--- Audio Devices ---", file=sys.stderr)
-    print(f"Selected USB input device: {device_id} at {native_samplerate}Hz", file=sys.stderr)
-    print("---------------------\n", file=sys.stderr)
-    
-    # Global state for audio
-    audio_queue = asyncio.Queue()
-    active_clients = set()
-    
-    # Needs to be called after event loop is running
-    # but we can grab the loop inside the callback dynamically, 
-    # or just use a global loop variable set on startup.
-    global_loop = None
-
-    def audio_callback(indata, frames, time_info, status):
-        if len(active_clients) > 0 and global_loop is not None:
-            global_loop.call_soon_threadsafe(audio_queue.put_nowait, indata[:, 0].copy())
-
-    async def transcribe_worker():
-        audio_buffer = np.array([], dtype=np.float32)
-        chunk_size = int(16000 * 1.5)  # 1.5 seconds
-
-        while True:
-            chunk = await audio_queue.get()
+        if native_samplerate != 16000:
+            duration = len(chunk) / native_samplerate
+            target_len = int(duration * 16000)
+            x_old = np.linspace(0, duration, len(chunk))
+            x_new = np.linspace(0, duration, target_len)
+            chunk = np.interp(x_new, x_old, chunk).astype(np.float32)
             
-            # If no clients, clear buffer and ignore
-            if len(active_clients) == 0:
-                audio_buffer = np.array([], dtype=np.float32)
-                continue
-                
-            if native_samplerate != 16000:
-                duration = len(chunk) / native_samplerate
-                target_len = int(duration * 16000)
-                x_old = np.linspace(0, duration, len(chunk))
-                x_new = np.linspace(0, duration, target_len)
-                chunk = np.interp(x_new, x_old, chunk).astype(np.float32)
-                
-            audio_buffer = np.concatenate((audio_buffer, chunk))
+        audio_buffer = np.concatenate((audio_buffer, chunk))
+        
+        if len(audio_buffer) >= chunk_size:
+            vol = np.max(np.abs(audio_buffer))
+            print(f"[STT] Transcribing 1.5s chunk... Max volume: {vol:.4f}", file=sys.stderr)
             
-            if len(audio_buffer) >= chunk_size:
-                vol = np.max(np.abs(audio_buffer))
-                print(f"[STT] Transcribing 1.5s chunk... Max volume: {vol:.4f}", file=sys.stderr)
-                
-                segments = await asyncio.to_thread(model.transcribe, audio_buffer)
-                
-                text = " ".join([segment.text for segment in segments]).strip()
-                text = re.sub(r'\[.*?\]', '', text).strip()
-                
-                if text:
-                    for ws in list(active_clients):
-                        try:
-                            await ws.send_json({"text": text})
-                        except Exception:
-                            pass
-                
-                overlap = int(16000 * 0.5)
-                audio_buffer = audio_buffer[-overlap:]
+            segments = await asyncio.to_thread(model.transcribe, audio_buffer)
+            
+            text = " ".join([segment.text for segment in segments]).strip()
+            text = re.sub(r'\[.*?\]', '', text).strip()
+            
+            if text:
+                for ws in list(active_clients):
+                    try:
+                        await ws.send_json({"text": text})
+                    except Exception:
+                        pass
+            
+            overlap = int(16000 * 0.5)
+            audio_buffer = audio_buffer[-overlap:]
 
-    # Start the background stream and worker immediately
-    # We use a lifespan hook to set this up safely
 @app.on_event("startup")
 async def startup_event():
     global global_loop
@@ -129,7 +118,6 @@ async def startup_event():
     # We open the stream globally so it never gets locked/unlocked
     global_stream = sd.InputStream(device=device_id, samplerate=native_samplerate, channels=1, dtype='float32', callback=audio_callback)
     global_stream.start()
-    # keep a reference to prevent garbage collection
     app.state.global_stream = global_stream
     print("Global audio stream started.", file=sys.stderr)
 
