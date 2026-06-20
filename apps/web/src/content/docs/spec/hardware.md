@@ -1,32 +1,32 @@
 ---
-title: Hardware Setup
-description: Raspberry Pi 5 and DSI Display Setup Guide
+title: Configuración de Hardware
+description: Guía de configuración para Raspberry Pi 5 y Pantalla DSI
 ---
 
-This guide documents a practical Raspberry Pi 5 setup for Raspberry Pi OS with a DSI display, including the required `config.txt` settings.
+Esta guía documenta una configuración práctica para Raspberry Pi 5 con Raspberry Pi OS y una pantalla DSI, incluyendo los ajustes necesarios en `config.txt`.
 
-## SSH pattern
+## Patrón de conexión SSH
 
-Use this format to connect:
+Usa este formato para conectarte:
 
 ```bash
 ssh user@host.local
 ```
 
-## Install Raspberry Pi OS
+## Instalar Raspberry Pi OS
 
-1. Flash Raspberry Pi OS with Raspberry Pi Imager.
-2. Complete first boot setup (user, locale, network).
-3. Update packages:
+1. Graba Raspberry Pi OS con Raspberry Pi Imager.
+2. Completa la configuración del primer inicio (usuario, región, red).
+3. Actualiza los paquetes:
 
 ```bash
 sudo apt update && sudo apt full-upgrade -y
 sudo reboot
 ```
 
-## Required DSI settings (`/boot/firmware/config.txt`)
+## Ajustes DSI requeridos (`/boot/firmware/config.txt`)
 
-For Raspberry Pi 5 with KMS and official 7" DSI display on DSI0, ensure these lines are present:
+Para Raspberry Pi 5 con KMS y pantalla oficial DSI de 7" en DSI0, asegúrate de que estas líneas estén presentes:
 
 ```ini
 dtoverlay=vc4-kms-v3d
@@ -35,33 +35,33 @@ display_auto_detect=0
 dtoverlay=vc4-kms-dsi-7inch,dsi0
 ```
 
-Recommended related options:
+Opciones recomendadas:
 
 ```ini
 disable_overscan=1
 arm_64bit=1
 ```
 
-If your panel is not the official 7" DSI display, use the correct overlay for your hardware from the Raspberry Pi overlay documentation.
+Si tu panel no es la pantalla oficial DSI de 7", usa el overlay correcto para tu hardware desde la documentación de overlays de Raspberry Pi.
 
-## Required Camera settings (`/boot/firmware/config.txt`)
+## Ajustes de Cámara requeridos (`/boot/firmware/config.txt`)
 
-For a camera (like the Arducam IMX415) connected to the secondary MIPI port (CAM1), you must disable auto-detection and specify the correct overlay:
+Para una cámara (como la Arducam IMX415) conectada al puerto MIPI secundario (CAM1), debes deshabilitar la autodetección y especificar el overlay correcto:
 
 ```ini
 camera_auto_detect=0
 dtoverlay=imx415,cam1
 ```
 
-## Example complete `config.txt` block
+## Ejemplo completo del bloque `config.txt`
 
 ```ini
-# Core interfaces (optional; keep if needed by your project)
+# Interfaces principales (opcional; mantener si tu proyecto lo necesita)
 dtparam=i2c_arm=on
 dtparam=spi=on
 dtparam=audio=on
 
-# Graphics + DSI
+# Gráficos + DSI
 display_auto_detect=0
 dtoverlay=vc4-kms-v3d
 max_framebuffers=2
@@ -72,36 +72,36 @@ disable_overscan=1
 dtparam=uart0=on
 dtoverlay=vc4-kms-dsi-7inch,dsi0
 
-# Camera
+# Cámara
 camera_auto_detect=0
 dtoverlay=imx415,cam1
 ```
 
-## Running OpenCV and MediaPipe scripts
+## Ejecución de scripts de OpenCV y MediaPipe
 
-Because the Raspberry Pi Camera Front End outputs raw Bayer data on newer OS versions (like Bookworm and Trixie), standard V4L2 calls in OpenCV will crash or return empty frames. You must run Python scripts that use `cv2.VideoCapture` using the `libcamerify` wrapper.
+Debido a que el Front End de la Cámara de la Raspberry Pi emite datos crudos Bayer en las versiones más nuevas del SO (como Bookworm y Trixie), las llamadas estándar V4L2 en OpenCV fallarán o devolverán frames vacíos. Debes ejecutar los scripts de Python que utilizan `cv2.VideoCapture` mediante el wrapper `libcamerify`.
 
 ```bash
 cd apps/sign-detector
 libcamerify uv run src/main.py
 ```
 
-*Note: If you run this over SSH, the Python script will automatically map the video window to the Raspberry Pi's physical DSI screen (`DISPLAY=:0`).*
+*Nota: Si ejecutas esto mediante SSH, el script de Python mapeará automáticamente la ventana de video a la pantalla DSI física de la Raspberry Pi (`DISPLAY=:0`).*
 
-## Validate display and camera stack
+## Validar configuración de pantalla y cámara
 
-After reboot, verify KMS/DSI modules are active:
+Después de reiniciar, verifica que los módulos KMS/DSI estén activos:
 
 ```bash
 lsmod | grep -E "vc4|drm"
 ```
 
-You should see modules such as `vc4`, `drm_rp1_dsi`, and `drm_kms_helper`.
+Deberías ver módulos como `vc4`, `drm_rp1_dsi` y `drm_kms_helper`.
 
-## Official Raspberry Pi documentation
+## Documentación oficial de Raspberry Pi
 
-- Raspberry Pi Imager (install OS): https://www.raspberrypi.com/software/
-- Raspberry Pi OS docs: https://www.raspberrypi.com/documentation/computers/os.html
-- `config.txt` reference: https://www.raspberrypi.com/documentation/computers/config_txt.html
-- Video/display configuration: https://www.raspberrypi.com/documentation/computers/configuration.html#video-options
-- Official display docs: https://www.raspberrypi.com/documentation/accessories/display.html
+- Raspberry Pi Imager (instalar el SO): https://www.raspberrypi.com/software/
+- Documentación de Raspberry Pi OS: https://www.raspberrypi.com/documentation/computers/os.html
+- Referencia de `config.txt`: https://www.raspberrypi.com/documentation/computers/config_txt.html
+- Configuración de video/pantalla: https://www.raspberrypi.com/documentation/computers/configuration.html#video-options
+- Documentación de la pantalla oficial: https://www.raspberrypi.com/documentation/accessories/display.html

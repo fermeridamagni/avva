@@ -1,53 +1,53 @@
 ---
-title: System Architecture
-description: Overview of the AVVA ecosystem architecture
+title: Arquitectura del Sistema
+description: Visión general de la arquitectura del ecosistema AVVA
 ---
 
-AVVA is a distributed ecosystem designed to provide an AI-powered assistant for Deaf-Mute people. The architecture relies on an interconnected network of applications running on diverse hardware to capture, translate, and communicate seamlessly.
+AVVA es un ecosistema distribuido diseñado para proporcionar un asistente impulsado por inteligencia artificial para personas sordomudas. La arquitectura se basa en una red interconectada de aplicaciones que se ejecutan en hardware diverso para capturar, traducir y comunicar sin interrupciones.
 
-## Monorepo Structure
+## Estructura del Monorepo
 
-The project is structured as a **Turborepo** workspace, utilizing `bun` as the primary package manager. The repository consists of the following key applications under the `apps/` directory:
+El proyecto está estructurado como un espacio de trabajo **Turborepo**, utilizando `bun` como el administrador de paquetes principal. El repositorio consta de las siguientes aplicaciones clave bajo el directorio `apps/`:
 
 - **Desktop Hub** (`apps/desktop`)
 - **Gateway API** (`apps/gateway-api`)
-- **Sign Detector** (`apps/sign-detector`)
-- **Speech-to-Text Service** (`apps/stt-service`)
-- **Arduino Firmware** (`apps/arduino-firmware`)
-- **Documentation Website** (`apps/web`)
+- **Detector de Señas** (`apps/sign-detector`)
+- **Servicio de Voz a Texto** (`apps/stt-service`)
+- **Firmware de Arduino** (`apps/arduino-firmware`)
+- **Sitio Web de Documentación** (`apps/web`)
 
-## Application Components
+## Componentes de la Aplicación
 
-### Desktop Hub
-The Desktop Hub acts as the primary user interface and control center for the AVVA ecosystem. 
-- **Tech Stack:** Tauri v2, React, TypeScript, Tailwind CSS, Shadcn UI.
-- **Responsibility:** Connects with the Gateway API to receive real-time notifications when a sign is detected and displays toast notifications to the user using Sonner.
+### Desktop Hub (Hub de Escritorio)
+El Hub de Escritorio actúa como la interfaz de usuario principal y centro de control del ecosistema AVVA.
+- **Stack Tecnológico:** Tauri v2, React, TypeScript, Tailwind CSS, Shadcn UI.
+- **Responsabilidad:** Se conecta con la Gateway API para recibir notificaciones en tiempo real cuando se detecta una seña y muestra alertas "toast" al usuario usando Sonner.
 
-### Sign Detector
-The core AI application that detects and interprets sign language in real-time.
-- **Tech Stack:** Python, MediaPipe, OpenCV (`hand_landmarker.task`), `uv` for package management.
-- **Hardware Context:** Runs natively on a Raspberry Pi 5 with an Arducam IMX415 camera and an official 7" DSI display.
-- **Execution Environment:** Runs headlessly in production, capturing frames using `libcamerify` to bypass V4L2 limitations on modern Raspberry Pi OS versions.
+### Detector de Señas
+La aplicación principal de IA que detecta e interpreta el lenguaje de señas en tiempo real.
+- **Stack Tecnológico:** Python, MediaPipe, OpenCV (`hand_landmarker.task`), `uv` para gestión de paquetes.
+- **Contexto de Hardware:** Se ejecuta de forma nativa en una Raspberry Pi 5 con una cámara Arducam IMX415 y una pantalla DSI oficial de 7".
+- **Entorno de Ejecución:** Se ejecuta de forma desatendida (headless) en producción, capturando imágenes mediante `libcamerify` para evitar las limitaciones de V4L2 en las versiones modernas del SO de la Raspberry Pi.
 
 ### Gateway API
-A central robust API acting as the brain of the network.
-- **Tech Stack:** Hono, TypeScript.
-- **Responsibility:** Operates on the local network (e.g., hosted on the Raspberry Pi) to receive sign detection events and dispatch them to connected clients (like the Desktop Hub) and distributed IoT devices.
+Una API central robusta que actúa como el cerebro de la red.
+- **Stack Tecnológico:** Hono, TypeScript.
+- **Responsabilidad:** Opera en la red local (por ejemplo, alojada en la Raspberry Pi) para recibir eventos de detección de señas y despacharlos a los clientes conectados (como el Desktop Hub) y a dispositivos IoT distribuidos.
 
-### Speech-to-Text (STT) Service
-A microservice for converting spoken words into text, providing an alternate mode of communication.
-- **Tech Stack:** Python, Whisper (small model).
-- **Responsibility:** Processes audio streams and returns transcribed text to the Gateway API or directly to the Desktop Hub.
+### Servicio de Voz a Texto (STT)
+Un microservicio para convertir palabras habladas a texto, proporcionando un modo alternativo de comunicación.
+- **Stack Tecnológico:** Python, Whisper (modelo pequeño).
+- **Responsabilidad:** Procesa flujos de audio y devuelve el texto transcrito a la Gateway API o directamente al Desktop Hub.
 
-### Arduino Firmware
-Firmware for distributed microcontrollers in the AVVA ecosystem.
-- **Responsibility:** Controls physical output devices (like household lighting or alerts) based on commands dispatched by the Gateway API, bridging the gap between digital AI translation and physical world actions.
+### Firmware de Arduino
+Firmware para microcontroladores distribuidos en el ecosistema AVVA.
+- **Responsabilidad:** Controla dispositivos físicos de salida (como iluminación del hogar o alertas) basados en los comandos enviados por la Gateway API, cerrando la brecha entre la traducción digital de IA y las acciones en el mundo físico.
 
-## Communication Flow
+## Flujo de Comunicación
 
-1. The **Sign Detector** on the Raspberry Pi captures continuous video feed using the Arducam.
-2. The AI model detects a specific sign language gesture.
-3. The Sign Detector sends an event payload to the **Gateway API**.
-4. The **Gateway API** broadcasts the event to all connected clients.
-5. The **Desktop Hub** receives the event and displays a notification to the user.
-6. Alternatively, the Gateway API triggers the **Arduino Firmware** to execute a physical action.
+1. El **Detector de Señas** en la Raspberry Pi captura una transmisión de video continua usando la cámara Arducam.
+2. El modelo de IA detecta un gesto específico de lenguaje de señas.
+3. El Detector de Señas envía un evento de información a la **Gateway API**.
+4. La **Gateway API** transmite el evento a todos los clientes conectados.
+5. El **Desktop Hub** recibe el evento y muestra una notificación al usuario.
+6. Alternativamente, la Gateway API le da la orden al **Firmware de Arduino** para que ejecute una acción física.

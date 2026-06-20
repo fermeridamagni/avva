@@ -1,39 +1,42 @@
-// @ts-check
-
 import starlight from "@astrojs/starlight";
-import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "astro/config";
 import lucodeStarlight from "lucode-starlight";
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://fermeridamagni.github.io',
-  base: '/avva',
+  site: "https://fermeridamagni.github.io",
+  base: "/avva",
   integrations: [
     starlight({
       title: "AVVA",
+      logo: {
+        src: "./src/assets/icon.png",
+      },
+      defaultLocale: "root",
+      locales: {
+        root: {
+          label: "Español",
+          lang: "es",
+        },
+      },
       customCss: ["./src/styles/global.css"],
       plugins: [lucodeStarlight()],
       social: [
         {
           icon: "github",
           label: "GitHub",
-          href: "https://github.com/lucas-labs",
+          href: "https://github.com/fermeridamagni/avva",
         },
       ],
       sidebar: [
         {
-          label: "Project Spec",
+          label: "Especificaciones",
           items: [
-            { label: "Architecture", slug: "spec/architecture" },
-            { label: "Hardware setup", slug: "spec/hardware" },
+            { label: "Arquitectura", slug: "spec/architecture" },
+            { label: "Hardware", slug: "spec/hardware" },
           ],
         },
       ],
     }),
   ],
-
-  vite: {
-    plugins: [tailwindcss()],
-  },
 });
