@@ -4,11 +4,11 @@
 #include <Servo.h>
 
 // WiFi credentials
-const char* ssid = "YOUR_WIFI_SSID";
-const char* password = "YOUR_WIFI_PASSWORD";
+const char* ssid = "Fer's iPhone";
+const char* password = "fer_hotspot1";
 
 // MQTT Broker settings
-const char* mqtt_server = "YOUR_RASPBERRY_PI_IP"; // e.g. 192.168.1.100
+const char* mqtt_server = "172.20.10.3"; // e.g. 192.168.1.100
 const int mqtt_port = 1883;
 const char* mqtt_topic = "avva/arduino/arduino-r4-1/command";
 
