@@ -22,9 +22,9 @@ def detect_one_hand_gesture(landmarks_list):
     states = compute_finger_states(landmarks)
 
     if is_hand_closed(states):
-        return ("TOOGLE_LIGHT", "Turn ON/OFF current Light", (0, 255, 128))
+        return ("TOOGLE_LIGHT", "Prender o apagar la luz", (0, 255, 128))
     elif is_index_and_middle_open(states):
-        return ("TOGGLE_TV", "Turn ON/OFF TV", (0, 255, 128))
+        return ("TOGGLE_TV", "Prender o apagar la televisión", (0, 255, 128))
 
     return None
 
@@ -55,10 +55,10 @@ def detect_two_hand_gesture(landmarks_list):
     hand2_index_and_middle = is_index_and_middle_open(states2)
 
     if (hand1_open and hand2_index) or (hand2_open and hand1_index):
-        return ("TOGGLE_FAN_1", "Toggle Fan 1", (0, 255, 128))
+        return ("TOGGLE_FAN_1", "Prender o apagar ventilador 1", (0, 255, 128))
     elif (hand1_open and hand2_index_and_middle) or (
         hand2_open and hand1_index_and_middle
     ):
-        return ("TOGGLE_FAN_2", "Toggle Fan 2", (0, 255, 128))
+        return ("TOGGLE_FAN_2", "Prender o apagar ventilador 2", (0, 255, 128))
 
     return None
