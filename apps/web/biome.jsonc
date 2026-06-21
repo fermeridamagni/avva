@@ -1,0 +1,15 @@
+{
+  "$schema": "../../node_modules/@biomejs/biome/configuration_schema.json",
+  "extends": ["ultracite/biome/core", "ultracite/biome/astro"],
+  "root": false,
+  "overrides": [
+    {
+      "includes": ["src/**/*.css"],
+      "css": {
+        "parser": {
+          "tailwindDirectives": true
+        }
+      }
+    }
+  ]
+}
