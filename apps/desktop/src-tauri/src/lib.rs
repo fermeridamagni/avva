@@ -31,11 +31,14 @@ pub fn run() {
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
-        .plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, Some(vec![])))
+        .plugin(tauri_plugin_autostart::init(
+            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+            Some(vec![]),
+        ))
         .invoke_handler(tauri::generate_handler![check_connectivity])
         .setup(|app| {
             let mut children = Vec::new();
-            
+
             println!("Starting gateway-api sidecar...");
             if let Ok(cmd) = app.shell().sidecar("gateway-api") {
                 if let Ok((rcv, child)) = cmd.spawn() {
@@ -71,11 +74,14 @@ pub fn run() {
             } else {
                 println!("Failed to resolve gateway-api sidecar.");
             }
-            
+
             println!("Starting sign-detector sidecar...");
             if let Ok(mut cmd) = app.shell().sidecar("sign-detector") {
                 if cfg!(target_arch = "aarch64") && cfg!(target_os = "linux") {
-                    cmd = cmd.env("LD_PRELOAD", "/usr/libexec/aarch64-linux-gnu/libcamera/v4l2-compat.so");
+                    cmd = cmd.env(
+                        "LD_PRELOAD",
+                        "/usr/libexec/aarch64-linux-gnu/libcamera/v4l2-compat.so",
+                    );
                 }
                 if let Ok((rcv, child)) = cmd.spawn() {
                     println!("sign-detector sidecar started with PID {}", child.pid());
